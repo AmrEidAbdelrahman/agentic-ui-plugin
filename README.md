@@ -5,7 +5,7 @@ Sends the notes you write on your running app with the Agentic UI Chrome extensi
 ## Install
 
 ```sh
-claude plugin marketplace add <owner>/<repo>
+claude plugin marketplace add https://github.com/AmrEidAbdelrahman/agentic-ui-plugin.git
 claude plugin install agentic-ui@agentic-ui
 ```
 
