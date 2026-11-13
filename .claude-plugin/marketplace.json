@@ -1,0 +1,13 @@
+{
+  "name": "agentic-ui",
+  "description": "Claude Code plugin for the Agentic UI Chrome extension.",
+  "owner": { "name": "Amr Eid" },
+  "plugins": [
+    {
+      "name": "agentic-ui",
+      "source": "./",
+      "description": "Sends notes from the Agentic UI Chrome extension into Claude Code as they're written.",
+      "category": "development"
+    }
+  ]
+}
