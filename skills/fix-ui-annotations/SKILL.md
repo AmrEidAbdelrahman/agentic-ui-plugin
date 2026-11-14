@@ -27,6 +27,8 @@ When the session runs the bridge as a channel, new annotations arrive on their o
 
 If a note is ambiguous, or you need the developer to choose, call `ask_developer` with the note's ID instead of asking in the terminal. The question appears on the note's pin in the browser, with any `options` as buttons, and the tool returns the answer. If it returns without one, move on; the answer arrives later as a `<channel source="agentic-ui" kind="answer">` message. Permission prompts for the note you're working on also appear on its pin, so the developer can allow or deny from the browser.
 
+The developer can also write to you from the extension's side panel (its Claude Code tab). Those messages arrive as `<channel source="agentic-ui" kind="message">`; answer with the `reply` tool, since the developer is reading the browser, not the terminal. Every permission prompt also shows in that tab.
+
 ## Fixing Jira tickets
 
 Testers and PMs file annotations from staging with the Chrome extension. Each becomes a Jira issue labeled `agentic-ui`. Read them with the Atlassian MCP server (`https://mcp.atlassian.com/v1/mcp/authv2`); if it isn't connected, ask the developer to add it and stop.
