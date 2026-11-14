@@ -1,7 +1,7 @@
 {
   "name": "agentic-ui",
   "displayName": "Agentic UI",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Sends the notes you write on your running app with the Agentic UI Chrome extension straight into Claude Code, which fixes them and marks the pins resolved.",
   "author": { "name": "Amr Eid" },
   "license": "MIT",

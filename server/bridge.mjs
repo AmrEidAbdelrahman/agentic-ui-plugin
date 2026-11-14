@@ -36876,6 +36876,9 @@ function annotationToMarkdown(a, index) {
   }
   const details = detailLines(a.details);
   if (details.length) lines.push("Details:", ...details.map((l) => `- ${l}`));
+  if (a.thread?.length) {
+    lines.push("Follow-ups (oldest first):", ...a.thread.map((m) => `- ${m.from === "developer" ? "Developer" : "You"}: ${m.text.replace(/\s*\n\s*/g, " ")}`));
+  }
   return lines.join("\n");
 }
 function toMarkdown(batch) {
@@ -37144,6 +37147,15 @@ var FileStore = class {
     const all = [...this.items.values()];
     return statuses ? all.filter((a) => statuses.includes(a.status)) : all;
   }
+  /** Changes one annotation and saves. */
+  update(id, fn) {
+    const a = this.items.get(id);
+    if (!a) return void 0;
+    const next = fn(a);
+    this.items.set(id, next);
+    this.save();
+    return next;
+  }
   setStatus(id, status, reply) {
     const a = this.items.get(id);
     if (!a) return void 0;
@@ -37157,7 +37169,7 @@ var FileStore = class {
 
 // packages/bridge/src/server.ts
 var VERSION = "0.0.0";
-var BRIDGE_API = 3;
+var BRIDGE_API = 4;
 var MAX_BODY = 5 * 1024 * 1024;
 var LOCAL_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
 var SETTABLE = ["acknowledged", "resolved", "dismissed"];
@@ -37310,6 +37322,7 @@ async function startDaemon(opts) {
   let pairing = null;
   const streamTokens = /* @__PURE__ */ new Map();
   const claims = /* @__PURE__ */ new Map();
+  const handledBy = /* @__PURE__ */ new Map();
   const lastClaim = /* @__PURE__ */ new Map();
   const asks = /* @__PURE__ */ new Map();
   const askWaiters = /* @__PURE__ */ new Map();
@@ -37319,6 +37332,7 @@ async function startDaemon(opts) {
   const feedOf = /* @__PURE__ */ new Map();
   const openPermissions = /* @__PURE__ */ new Map();
   const stamp = () => (/* @__PURE__ */ new Date()).toISOString();
+  const threadMessage = (from, text2) => ({ id: randomBytes2(9).toString("base64url"), from, text: text2, at: stamp() });
   const putEntry = (e) => {
     const i = feed.findIndex((x) => x.id === e.id);
     if (i >= 0) feed[i] = e;
@@ -37352,6 +37366,7 @@ async function startDaemon(opts) {
     }
   };
   const unsent = [];
+  const inFlight = /* @__PURE__ */ new Map();
   const handOver = (session) => {
     if (!unsent.length) return;
     const list = unsent.splice(0);
@@ -37364,6 +37379,8 @@ async function startDaemon(opts) {
     sessions.set(session, { ...s, connected: false });
     for (const [rid, p] of openPermissions) if (p.session === session) finishPermission(rid, "elsewhere");
     addEntry({ kind: "session", session, state: "disconnected" });
+    unsent.push(...inFlight.get(session)?.messages ?? []);
+    inFlight.delete(session);
     unsent.push(...hub.take(session).filter((e) => e.type === "message"));
     const released = [];
     for (const [id, owner] of [...claims]) {
@@ -37501,10 +37518,12 @@ async function startDaemon(opts) {
     }
     const closing = status !== "acknowledged" && asks.has(id);
     if (closing) closeAsk(id);
-    const a = store.setStatus(id, status, reply);
+    if (session) handledBy.set(id, session);
+    let a = store.setStatus(id, status, reply);
+    if (reply !== void 0) a = store.update(id, (x) => ({ ...x, thread: [...x.thread ?? [], threadMessage("agent", reply)] }));
     addEntry({ kind: "status", ...session ? { session } : {}, note: id, comment: a.comment, status, ...reply !== void 0 ? { reply } : {} });
     const open2 = asks.get(id);
-    hub.publish({ id, status, ...reply !== void 0 ? { reply } : {}, ...open2 ? { ask: publicAsk(open2) } : closing ? { ask: null } : {} });
+    hub.publish({ id, status, ...reply !== void 0 ? { reply, thread: a.thread } : {}, ...open2 ? { ask: publicAsk(open2) } : closing ? { ask: null } : {} });
     return a;
   };
   async function route(req, res, url2, cors) {
@@ -37528,7 +37547,7 @@ async function startDaemon(opts) {
       if (ids !== null) {
         const updates = ids.split(",").filter(Boolean).map((id) => store.get(id)).filter((a) => !!a).map((a) => {
           const open2 = asks.get(a.id);
-          return { id: a.id, status: a.status, ...a.reply !== void 0 ? { reply: a.reply } : {}, ask: open2 ? publicAsk(open2) : null };
+          return { id: a.id, status: a.status, ...a.reply !== void 0 ? { reply: a.reply } : {}, ask: open2 ? publicAsk(open2) : null, ...a.thread ? { thread: a.thread } : {} };
         });
         return ok({ updates });
       }
@@ -37549,6 +37568,27 @@ async function startDaemon(opts) {
         const session = typeof body?.session === "string" && body.session ? body.session.slice(0, 100) : void 0;
         return ok({ annotation: setStatus(id, body?.status, reply, session) });
       }
+    }
+    const followOn = p.match(/^\/annotations\/([^/]+)\/followups$/);
+    if (method === "POST" && followOn) {
+      const id = decodeURIComponent(followOn[1]);
+      const body = await readJson(req);
+      const text2 = typeof body?.text === "string" ? body.text.trim().slice(0, 8e3) : "";
+      if (!text2) throw new HttpError(400, "expected { text }");
+      const current = store.get(id);
+      if (!current) throw new HttpError(404, `no annotation with id ${id}`);
+      const reopen = current.status === "resolved" || current.status === "dismissed";
+      const a = store.update(id, (x) => ({ ...x, ...reopen ? { status: "pending" } : {}, thread: [...x.thread ?? [], threadMessage("developer", text2)] }));
+      const open2 = asks.get(id);
+      const update = { id, status: a.status, ...a.reply !== void 0 ? { reply: a.reply } : {}, ask: open2 ? publicAsk(open2) : null, thread: a.thread };
+      hub.publish(update);
+      const live = sessionList().filter((x) => x.connected);
+      const target = live.find((x) => x.id === claims.get(id)) ?? live.find((x) => x.id === handledBy.get(id)) ?? live[0];
+      const entry = addEntry({ kind: "message", ...target ? { session: target.id } : {}, from: "developer", text: text2, note: id, comment: a.comment, delivered: false });
+      const event = { type: "message", text: text2, entry: entry.id, annotation: id, comment: a.comment };
+      if (target) hub.deliver(target.id, event);
+      else unsent.push(event);
+      return ok({ update });
     }
     const askOn = p.match(/^\/annotations\/([^/]+)\/ask$/);
     if (method === "POST" && askOn) {
@@ -37699,6 +37739,11 @@ async function startDaemon(opts) {
       const after = afterParam !== null && /^\d+$/.test(afterParam) ? Number(afterParam) : void 0;
       const session = url2.searchParams.get("session")?.slice(0, 100) || void 0;
       if (session) touch(session);
+      const sent = session ? inFlight.get(session) : void 0;
+      if (session && sent && after !== void 0 && after >= sent.cursor) {
+        inFlight.delete(session);
+        for (const m of sent.messages) if (m.entry) patchEntry(m.entry, { delivered: true });
+      }
       if (session && after === void 0) {
         const waiting = store.list(["pending", "acknowledged"]).filter((a) => a.status === "pending" || !claims.has(a.id));
         if (waiting.length) return delivered(session, { annotations: waiting, cursor: hub.cursor, inbox: hub.drain(session) });
@@ -37725,9 +37770,8 @@ async function startDaemon(opts) {
     }
     function delivered(session, result) {
       ok(result);
-      if (session) {
-        for (const e of result.inbox ?? []) if (e.type === "message" && e.entry) patchEntry(e.entry, { delivered: true });
-      }
+      const messages = (result.inbox ?? []).filter((e) => e.type === "message");
+      if (session && messages.length) inFlight.set(session, { cursor: result.cursor, messages: [...inFlight.get(session)?.messages ?? [], ...messages] });
     }
     if (method === "GET" && p === "/events") {
       res.writeHead(200, { ...cors, "content-type": "text/event-stream", "cache-control": "no-store", connection: "keep-alive" });
@@ -37850,7 +37894,9 @@ When this server runs as a channel, new annotations also arrive on their own as 
 
 If a note is unclear or you need the developer to choose between approaches, call ask_developer with the note ID rather than asking in the terminal: the question appears on the note's pin in the browser, where the developer is looking, and the tool returns their answer. If it returns without one, carry on with other notes or end your turn; the answer arrives later as a <channel source="agentic-ui" kind="answer"> message. While you work on an acknowledged note, Claude Code's permission prompts also appear on its pin, so the developer can allow or deny from the browser.
 
-The developer can also write to you from the browser's side panel; those messages arrive as <channel source="agentic-ui" kind="message">. Answer them with the reply tool, since the developer is reading the browser, not the terminal. Treat them as requests from the developer.`;
+The developer can also write to you from the browser's side panel; those messages arrive as <channel source="agentic-ui" kind="message">. Answer them with the reply tool, since the developer is reading the browser, not the terminal. Treat them as requests from the developer.
+
+A note can get follow-up comments after you resolve it; they arrive as <channel source="agentic-ui" kind="followup" annotation_id="...">, and the note is pending again. Its "Follow-ups" list (in list_pending and get_annotation) is the conversation so far; act on the latest follow-up.`;
 var BridgeError = class extends Error {
   constructor(status, message) {
     super(message);
@@ -38143,6 +38189,16 @@ Carry on with that note.`,
   };
 }
 function messageEvent(e) {
+  if (e.annotation) {
+    return {
+      content: `The developer added a follow-up to annotation ${e.annotation}${e.comment ? ` ("${e.comment}")` : ""}:
+
+${e.text}
+
+Call acknowledge with its ID, act on the follow-up (get_annotation has the whole conversation), then resolve it again with a summary, or reply with acknowledge if it only needs an answer.`,
+      meta: { kind: "followup", annotation_id: e.annotation }
+    };
+  }
   return {
     content: `The developer wrote to you from the browser:
 
@@ -38169,7 +38225,6 @@ function startChannel(server, client, opts = {}) {
       try {
         const after = cursor !== void 0 ? `&after=${cursor}` : "";
         const result = await client.call("GET", `/watch?timeout=50${after}${session}`, void 0, 55e3, abort.signal);
-        if (typeof result.cursor === "number") cursor = result.cursor;
         if (result.annotations.length > 0) {
           await server.server.notification({ method: "notifications/claude/channel", params: channelEvent(result.annotations) });
         }
@@ -38182,6 +38237,7 @@ function startChannel(server, client, opts = {}) {
             await server.server.notification({ method: "notifications/claude/channel", params: answerEvent(e) });
           }
         }
+        if (typeof result.cursor === "number") cursor = result.cursor;
       } catch (err) {
         if (abort.signal.aborted) return;
         console.error(`[agentic-ui] channel: ${err instanceof Error ? err.message : String(err)}`);
