@@ -1,6 +1,6 @@
 ---
 name: fix-ui-annotations
-description: Fix the UI annotations sent from the Agentic UI toolbar or Chrome extension, either through the local agentic-ui MCP server or as Jira tickets labeled agentic-ui. Use when asked to fix pending annotations, UI notes, toolbar comments, a Jira key such as SHOP-142, or the open agentic-ui tickets, or to keep fixing annotations as they come in.
+description: Fix the UI annotations sent from the Agentic UI toolbar or Chrome extension, either through the local agentic-ui MCP server, as Jira tickets labeled agentic-ui, or as Azure DevOps work items tagged agentic-ui. Use when asked to fix pending annotations, UI notes, toolbar comments, a Jira key such as SHOP-142, an Azure DevOps work item such as #1234, or the open agentic-ui tickets, or to keep fixing annotations as they come in.
 ---
 
 <!-- Part of the agentic-ui Claude Code plugin. -->
@@ -18,6 +18,8 @@ The developer clicks elements in their running app, writes a comment, and sends 
    - Call `resolve` with a one-line summary the developer will see on the pin, for example "FilterPanel: Apply button is full width below 640px".
    - If no change is needed, or you can't do it, call `dismiss` with the reason.
 3. Finish with a short list of what you changed.
+
+A **recorded flow** is one annotation titled "Recorded flow" (ID `flow-…`): the developer's description of a bug that takes several steps, the errors, warnings and failed requests logged on the page while recording, and the path of the screen recording in the project (`.agentic-ui/flows/`). Its numbered steps are separate annotations that say "Flow step: N of recorded flow flow-…". Read the flow first and look for the cause in its problems; use the steps' elements and sources to find the code. If you need to see a moment of the video, extract a frame with `ffmpeg` and read the image. Resolve the flow and its steps together.
 
 ## Fixing them as they come in
 
@@ -45,3 +47,17 @@ Testers and PMs file annotations from staging with the Chrome extension. Each be
 6. Comment on the issue with what you changed (files and a one-line summary).
 7. Move the issue to the team's review status. The first time, ask the developer which status that is (for example "In Review") and save it in `.agentic-ui/jira.json` as `{ "reviewStatus": "In Review" }`; after that, read it from there. If the transition isn't available, say so and leave the status as it is.
 8. Finish with a list of issues and what you changed in each.
+
+## Fixing Azure DevOps work items
+
+Annotations filed to Azure DevOps become work items tagged `agentic-ui`. Read them with Microsoft's Azure DevOps MCP server (`npx -y @azure-devops/mcp <organization>`); if it isn't connected, ask the developer to add it and stop.
+
+1. Find the work items:
+   - For a number such as "fix #1234" or "fix work item 1234", read that work item.
+   - For "the open agentic-ui work items in Shop", run a WIQL query: `SELECT [System.Id] FROM WorkItems WHERE [System.TeamProject] = 'Shop' AND [System.Tags] CONTAINS 'agentic-ui' AND [System.State] NOT IN ('Done', 'Closed', 'Resolved', 'Removed') ORDER BY [System.CreatedDate] ASC`. State names depend on the project's process; adjust them if the query finds nothing.
+2. For each work item, take the annotation JSON from the "Agent context (annotation.json)" block at the end of Repro Steps (Bugs) or Description (other types). If it says the JSON was too large, read the `annotation.json` attachment instead. Look at `screenshot.webp` too if you can read attachments; the selected element is outlined.
+3. Find the code and check `build.commit` as in steps 3 and 4 for Jira above.
+4. Make the change. Leave it on the current branch; don't commit, push or open a pull request unless the developer asks.
+5. Comment on the work item with what you changed (files and a one-line summary).
+6. Move the work item to the team's review state. The first time, ask the developer which state that is (for example "Resolved") and save it in `.agentic-ui/azure-devops.json` as `{ "reviewState": "Resolved" }`; after that, read it from there. If the state isn't allowed for the work item type, say so and leave it as it is.
+7. Finish with a list of work items and what you changed in each.

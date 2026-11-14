@@ -7257,7 +7257,7 @@ var require_dist = __commonJS({
 });
 
 // packages/bridge/src/cli.ts
-import { readFileSync as readFileSync4, rmSync as rmSync2, writeFileSync as writeFileSync4 } from "node:fs";
+import { readFileSync as readFileSync4, rmSync as rmSync3, writeFileSync as writeFileSync4 } from "node:fs";
 import path7 from "node:path";
 
 // packages/bridge/src/config.ts
@@ -7274,7 +7274,8 @@ function bridgePaths(root) {
     annotations: path.join(dir, "annotations.json"),
     log: path.join(dir, "bridge.log"),
     pid: path.join(dir, "bridge.pid"),
-    screenshots: path.join(dir, "screenshots")
+    screenshots: path.join(dir, "screenshots"),
+    flows: path.join(dir, "flows")
   };
 }
 function findRoot(start = process.cwd()) {
@@ -7339,7 +7340,7 @@ function savePaired(root, paired) {
 // packages/bridge/src/mcp.ts
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { openSync, readFileSync as readFileSync3, rmSync } from "node:fs";
+import { openSync, readFileSync as readFileSync3, rmSync as rmSync2 } from "node:fs";
 import path6 from "node:path";
 import { fileURLToPath as fileURLToPath3 } from "node:url";
 
@@ -36816,6 +36817,10 @@ function describe3(el) {
   const what = `${text2}${el.tag}`;
   return el.component ? `${el.component.name}: ${what}` : what;
 }
+function clockOf(ms2) {
+  const s = Math.round(ms2 / 1e3);
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}
 function truncate(s, n) {
   return s.length > n ? `${s.slice(0, n - 1)}\u2026` : s;
 }
@@ -36841,6 +36846,7 @@ function elementLines(el) {
   return lines;
 }
 function title(a) {
+  if (a.extensions?.flow) return "Recorded flow";
   const t = a.target;
   switch (t.kind) {
     case "element":
@@ -36863,7 +36869,7 @@ function annotationToMarkdown(a, index) {
   if (t.kind === "text") {
     lines.push(`Selected text: "${t.text}"`, ...elementLines(t.element));
   } else {
-    if (t.kind === "area") {
+    if (t.kind === "area" && !a.extensions?.flow) {
       const r = t.rect;
       lines.push(`Area: ${Math.round(r.width)}x${Math.round(r.height)} at ${Math.round(r.x)},${Math.round(r.y)}`);
     }
@@ -36874,6 +36880,7 @@ function annotationToMarkdown(a, index) {
     });
     if (t.kind === "area" && t.omitted) lines.push(`(${t.omitted} more elements not listed)`);
   }
+  if (a.flow) lines.push(`Flow step: ${a.flow.step} of recorded flow flow-${a.flow.id}, ${clockOf(a.flow.t)} into the recording`);
   const details = detailLines(a.details);
   if (details.length) lines.push("Details:", ...details.map((l) => `- ${l}`));
   if (a.thread?.length) {
@@ -36888,7 +36895,7 @@ function toMarkdown(batch) {
 
 // packages/bridge/src/server.ts
 import { randomBytes as randomBytes2, randomInt, timingSafeEqual } from "node:crypto";
-import { mkdirSync as mkdirSync3, writeFileSync as writeFileSync3 } from "node:fs";
+import { createWriteStream, mkdirSync as mkdirSync3, renameSync as renameSync2, rmSync, writeFileSync as writeFileSync3 } from "node:fs";
 import { createServer as createServer2 } from "node:http";
 import path5 from "node:path";
 
@@ -37169,8 +37176,10 @@ var FileStore = class {
 
 // packages/bridge/src/server.ts
 var VERSION = "0.0.0";
-var BRIDGE_API = 4;
+var BRIDGE_API = 5;
 var MAX_BODY = 5 * 1024 * 1024;
+var MAX_VIDEO = 300 * 1024 * 1024;
+var VIDEO_TYPES = { "video/webm": "webm", "video/mp4": "mp4" };
 var LOCAL_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
 var SETTABLE = ["acknowledged", "resolved", "dismissed"];
 var EVENT_LOG_SIZE = 500;
@@ -37212,6 +37221,25 @@ async function readJson(req) {
     return JSON.parse(Buffer.concat(chunks).toString("utf8") || "null");
   } catch {
     throw new HttpError(400, "invalid JSON");
+  }
+}
+async function saveBody(req, file2, max) {
+  const tmp = `${file2}.part`;
+  const out = createWriteStream(tmp);
+  let size = 0;
+  try {
+    for await (const chunk of req) {
+      size += chunk.length;
+      if (size > max) throw new HttpError(413, "video too large");
+      if (!out.write(chunk)) await new Promise((r) => out.once("drain", r));
+    }
+    await new Promise((resolve, reject) => out.end((err) => err ? reject(err) : resolve()));
+    if (size === 0) throw new HttpError(400, "empty video");
+    renameSync2(tmp, file2);
+  } catch (err) {
+    out.destroy();
+    rmSync(tmp, { force: true });
+    throw err;
   }
 }
 var EventHub = class {
@@ -37541,6 +37569,15 @@ async function startDaemon(opts) {
       hub.arrived(added);
       if (added.length) addEntry({ kind: "notes", notes: added.map((a) => ({ id: a.id, comment: a.comment })) });
       return ok({ ok: true, accepted: added.length });
+    }
+    const video = method === "POST" ? /^\/flows\/([A-Za-z0-9_-]{1,100})\/video$/.exec(p) : null;
+    if (video) {
+      const ext = VIDEO_TYPES[String(req.headers["content-type"] ?? "").split(";")[0].trim().toLowerCase()];
+      if (!ext) throw new HttpError(415, "expected a video/webm or video/mp4 body");
+      mkdirSync3(paths.flows, { recursive: true });
+      const target = path5.join(paths.flows, `flow-${video[1]}.${ext}`);
+      await saveBody(req, target, MAX_VIDEO);
+      return ok({ ok: true, file: path5.relative(root, target).split(path5.sep).join("/") });
     }
     if (method === "GET" && p === "/annotations") {
       const ids = url2.searchParams.get("ids");
@@ -37896,7 +37933,9 @@ If a note is unclear or you need the developer to choose between approaches, cal
 
 The developer can also write to you from the browser's side panel; those messages arrive as <channel source="agentic-ui" kind="message">. Answer them with the reply tool, since the developer is reading the browser, not the terminal. Treat them as requests from the developer.
 
-A note can get follow-up comments after you resolve it; they arrive as <channel source="agentic-ui" kind="followup" annotation_id="...">, and the note is pending again. Its "Follow-ups" list (in list_pending and get_annotation) is the conversation so far; act on the latest follow-up.`;
+A note can get follow-up comments after you resolve it; they arrive as <channel source="agentic-ui" kind="followup" annotation_id="...">, and the note is pending again. Its "Follow-ups" list (in list_pending and get_annotation) is the conversation so far; act on the latest follow-up.
+
+A recorded flow arrives as one annotation titled "Recorded flow" (ID flow-\u2026): the developer's description of what went wrong, the errors, warnings and failed requests logged on the page while recording, and the path of the video in the project. Its numbered steps are separate annotations that name the flow ("Flow step: N of recorded flow flow-\u2026"). Read the flow first, fix what it describes using the steps' elements and sources, then resolve the flow and its steps.`;
 var BridgeError = class extends Error {
   constructor(status, message) {
     super(message);
@@ -37965,7 +38004,7 @@ var DaemonClient = class {
     try {
       process.kill(pid, "SIGTERM");
     } catch {
-      rmSync(pidFile, { force: true });
+      rmSync2(pidFile, { force: true });
       return false;
     }
     console.error(`[agentic-ui] replacing an older bridge daemon (pid ${pid})`);
@@ -38295,7 +38334,7 @@ async function daemon(root) {
     const pidFile = bridgePaths(root).pid;
     writeFileSync4(pidFile, String(process.pid));
     const stop = () => void d.close().then(() => {
-      rmSync2(pidFile, { force: true });
+      rmSync3(pidFile, { force: true });
       process.exit(0);
     });
     process.on("SIGINT", stop);
@@ -38346,7 +38385,7 @@ async function main() {
         process.kill(pid, "SIGTERM");
         console.error(`[agentic-ui] stopped bridge (pid ${pid})`);
       } catch {
-        rmSync2(pidFile, { force: true });
+        rmSync3(pidFile, { force: true });
         console.error("[agentic-ui] no bridge running");
       }
       return;
