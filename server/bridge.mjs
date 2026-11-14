@@ -37157,7 +37157,7 @@ var FileStore = class {
 
 // packages/bridge/src/server.ts
 var VERSION = "0.0.0";
-var BRIDGE_API = 2;
+var BRIDGE_API = 3;
 var MAX_BODY = 5 * 1024 * 1024;
 var LOCAL_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
 var SETTABLE = ["acknowledged", "resolved", "dismissed"];
@@ -37169,6 +37169,7 @@ var STREAM_TOKEN_TTL_MS = 2 * 6e4;
 var ASK_ID = /^[A-Za-z0-9_-]{1,64}$/;
 var FEED_SIZE = 300;
 var SESSION_IDLE_MS = 75e3;
+var SESSION_GONE_MS = 5e3;
 var SESSION_FORGET_MS = 60 * 6e4;
 var SCREENSHOT = /^data:image\/(png|jpeg|webp);base64,([A-Za-z0-9+/=]+)$/;
 function toolLabel(tool) {
@@ -37236,6 +37237,16 @@ var EventHub = class {
     box.push(...events);
     this.inboxes.set(session, box.slice(-EVENT_LOG_SIZE));
     for (const w of [...this.waiters]) w();
+  }
+  /** The latest sequence number: a cursor that skips everything so far. */
+  get cursor() {
+    return this.seq;
+  }
+  /** Takes a session's undelivered events away (it ended). */
+  take(session) {
+    const box = this.inboxes.get(session) ?? [];
+    this.inboxes.delete(session);
+    return box;
   }
   drain(session) {
     if (!session) return [];
@@ -37319,6 +37330,10 @@ async function startDaemon(opts) {
     return e;
   };
   const addEntry = (e) => putEntry({ id: randomBytes2(9).toString("base64url"), at: stamp(), ...e });
+  const patchEntry = (id, patch) => {
+    const e = feed.find((x) => x.id === id);
+    if (e) putEntry({ ...e, ...patch });
+  };
   const amendEntry = (key, patch) => {
     const id = feedOf.get(key);
     feedOf.delete(key);
@@ -37333,7 +37348,15 @@ async function startDaemon(opts) {
     if (!known?.connected || client && client !== known.client) {
       if (!known?.connected) addEntry({ kind: "session", session, state: "connected", ...info.client ? { client: info.client } : {} });
       hub.feed({ sessions: sessionList() });
+      handOver(session);
     }
+  };
+  const unsent = [];
+  const handOver = (session) => {
+    if (!unsent.length) return;
+    const list = unsent.splice(0);
+    hub.deliver(session, ...list);
+    for (const m of list) if (m.entry) patchEntry(m.entry, { session });
   };
   const disconnect = (session) => {
     const s = sessions.get(session);
@@ -37341,6 +37364,21 @@ async function startDaemon(opts) {
     sessions.set(session, { ...s, connected: false });
     for (const [rid, p] of openPermissions) if (p.session === session) finishPermission(rid, "elsewhere");
     addEntry({ kind: "session", session, state: "disconnected" });
+    unsent.push(...hub.take(session).filter((e) => e.type === "message"));
+    const released = [];
+    for (const [id, owner] of [...claims]) {
+      if (owner !== session) continue;
+      claims.delete(id);
+      const a = store.get(id);
+      if (a?.status !== "acknowledged") continue;
+      closeAsk(id);
+      released.push(store.setStatus(id, "pending", a.reply));
+      hub.publish({ id, status: "pending", ...a.reply !== void 0 ? { reply: a.reply } : {}, ask: null });
+    }
+    lastClaim.delete(session);
+    if (released.length) hub.arrived(released);
+    const next = sessionList().find((x) => x.connected);
+    if (next) handOver(next.id);
     hub.feed({ sessions: sessionList() });
   };
   const sweep = setInterval(() => {
@@ -37622,9 +37660,11 @@ async function startDaemon(opts) {
       if (!text2) throw new HttpError(400, "expected { text, session? }");
       const live = sessionList().filter((s) => s.connected);
       const target = live.find((s) => s.id === body.session) ?? live[0];
-      if (!target) throw new HttpError(409, "No Claude Code session is connected. Start Claude Code in this project with the agentic-ui channel.");
-      hub.deliver(target.id, { type: "message", text: text2 });
-      return ok({ entry: addEntry({ kind: "message", session: target.id, from: "developer", text: text2 }) });
+      const entry = addEntry({ kind: "message", ...target ? { session: target.id } : {}, from: "developer", text: text2, delivered: false });
+      const event = { type: "message", text: text2, entry: entry.id };
+      if (target) hub.deliver(target.id, event);
+      else unsent.push(event);
+      return ok({ entry });
     }
     const answerOn = p.match(/^\/annotations\/([^/]+)\/answer$/);
     if (method === "POST" && answerOn) {
@@ -37659,18 +37699,35 @@ async function startDaemon(opts) {
       const after = afterParam !== null && /^\d+$/.test(afterParam) ? Number(afterParam) : void 0;
       const session = url2.searchParams.get("session")?.slice(0, 100) || void 0;
       if (session) touch(session);
+      if (session && after === void 0) {
+        const waiting = store.list(["pending", "acknowledged"]).filter((a) => a.status === "pending" || !claims.has(a.id));
+        if (waiting.length) return delivered(session, { annotations: waiting, cursor: hub.cursor, inbox: hub.drain(session) });
+      }
       let closed = false;
-      const result = await hub.wait(seconds * 1e3, after, session, (cancel) => req.on("close", () => {
+      const result = await hub.wait(seconds * 1e3, after, session, (cancel) => res.on("close", () => {
+        if (res.writableFinished) return;
         closed = true;
         cancel();
+        if (session) {
+          const at = Date.now();
+          setTimeout(() => {
+            const s = sessions.get(session);
+            if (s?.connected && Date.parse(s.lastSeen) <= at) disconnect(session);
+          }, opts.sessionGoneMs ?? SESSION_GONE_MS).unref();
+        }
       }));
       if (closed || res.destroyed) {
         if (session && result.inbox?.length) hub.deliver(session, ...result.inbox);
         return;
       }
       if (session && sessions.get(session)?.connected) touch(session);
+      return delivered(session, result);
+    }
+    function delivered(session, result) {
       ok(result);
-      return;
+      if (session) {
+        for (const e of result.inbox ?? []) if (e.type === "message" && e.entry) patchEntry(e.entry, { delivered: true });
+      }
     }
     if (method === "GET" && p === "/events") {
       res.writeHead(200, { ...cors, "content-type": "text/event-stream", "cache-control": "no-store", connection: "keep-alive" });
