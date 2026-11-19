@@ -1,6 +1,6 @@
 ---
 name: fix-ui-annotations
-description: Fix the UI annotations sent from the Agentic UI toolbar or Chrome extension, either through the local agentic-ui MCP server, as Jira tickets labeled agentic-ui, or as Azure DevOps work items tagged agentic-ui. Use when asked to fix pending annotations, UI notes, toolbar comments, a Jira key such as SHOP-142, an Azure DevOps work item such as #1234, or the open agentic-ui tickets, or to keep fixing annotations as they come in.
+description: Fix the UI annotations sent from the Agentic UI toolbar or Chrome extension, either through the local agentic-ui MCP server, as Jira tickets labeled agentic-ui, as Azure DevOps work items tagged agentic-ui, or as Linear, GitHub or GitLab issues labeled agentic-ui. Use when asked to fix pending annotations, UI notes, toolbar comments, a Jira key such as SHOP-142, an Azure DevOps work item such as #1234, a Linear issue such as ENG-12, a GitHub issue such as acme/shop#12, a GitLab issue such as web/shop#12, or the open agentic-ui tickets, or to keep fixing annotations as they come in.
 ---
 
 <!-- Part of the agentic-ui Claude Code plugin. -->
@@ -15,6 +15,7 @@ The developer clicks elements in their running app, writes a comment, and sends 
    - If there is no file location, or it looks stale, search the codebase for the element details (test id, aria-label, visible text, class names).
    - For a large or unclear change, call `acknowledge` first with a short plan or question.
    - Make the change.
+   - If the note has an "Accessibility:" line (a problem axe-core found), call `check_accessibility` with its ID once your change is on the page: the developer's browser runs the rule again on the note's elements and says which pass and which still fail. Resolve it only when they pass.
    - Call `resolve` with a one-line summary the developer will see on the pin, for example "FilterPanel: Apply button is full width below 640px".
    - If no change is needed, or you can't do it, call `dismiss` with the reason.
 3. Finish with a short list of what you changed.
@@ -25,11 +26,11 @@ A **recorded flow** is one annotation titled "Recorded flow" (ID `flow-…`): th
 
 When asked to keep going, call `watch` after the pending list is empty. It returns new annotations as they arrive, or nothing after 60 seconds; fix what it returns, then call `watch` again. Stop when the developer says so.
 
-When the session runs the bridge as a channel, new annotations arrive on their own as a `<channel source="agentic-ui">` message, so there is no need to call `watch`. Call `acknowledge` before starting each one; if it says another session has it or it is already resolved, skip it.
+In Claude Code, when the session runs the bridge as a channel, new annotations arrive on their own as a `<channel source="agentic-ui">` message, so there is no need to call `watch`. Call `acknowledge` before starting each one; if it says another session has it or it is already resolved, skip it.
 
-If a note is ambiguous, or you need the developer to choose, call `ask_developer` with the note's ID instead of asking in the terminal. The question appears on the note's pin in the browser, with any `options` as buttons, and the tool returns the answer. If it returns without one, move on; the answer arrives later as a `<channel source="agentic-ui" kind="answer">` message. Permission prompts for the note you're working on also appear on its pin, so the developer can allow or deny from the browser.
+If a note is ambiguous, or you need the developer to choose, call `ask_developer` with the note's ID instead of asking in the terminal or chat. The question appears on the note's pin in the browser, with any `options` as buttons, and the tool returns the answer. If it returns without one, move on; the answer comes later (see below). In Claude Code, permission prompts for the note you're working on also appear on its pin, so the developer can allow or deny from the browser.
 
-The developer can also write to you from the extension's side panel (its Claude Code tab). Those messages arrive as `<channel source="agentic-ui" kind="message">`; answer with the `reply` tool, since the developer is reading the browser, not the terminal. Every permission prompt also shows in that tab.
+The developer can also write to you from the extension's side panel. Answer with the `reply` tool, since the developer is reading the browser, not the terminal. In Claude Code, their messages and late answers arrive as `<channel source="agentic-ui" kind="message">` and `kind="answer"`. Agents without channels, such as Cursor, find them at the end of a tool result from the agentic-ui server, under "From the developer, in the browser:".
 
 ## Fixing Jira tickets
 
@@ -61,3 +62,42 @@ Annotations filed to Azure DevOps become work items tagged `agentic-ui`. Read th
 5. Comment on the work item with what you changed (files and a one-line summary).
 6. Move the work item to the team's review state. The first time, ask the developer which state that is (for example "Resolved") and save it in `.agentic-ui/azure-devops.json` as `{ "reviewState": "Resolved" }`; after that, read it from there. If the state isn't allowed for the work item type, say so and leave it as it is.
 7. Finish with a list of work items and what you changed in each.
+
+## Fixing GitHub issues
+
+Annotations filed to GitHub become issues labeled `agentic-ui`, without a screenshot (GitHub's API can't attach images). Read them with the GitHub CLI (`gh`), or GitHub's MCP server if it is connected. If neither works, ask the developer to run `gh auth login` and stop.
+
+1. Find the issues:
+   - For "fix acme/shop#12" or "fix GitHub issue 12", read it: `gh issue view 12 --repo acme/shop --json number,title,body`. A bare "#12" could also be an Azure DevOps work item or a GitLab issue: if more than one is set up, ask which.
+   - For "the open agentic-ui issues", list them: `gh issue list --repo <owner/name> --label agentic-ui --state open --json number,title`. Without a repository named, use the current repository's.
+2. For each issue, take the annotation JSON from the collapsed "Agent context (annotation.json)" block at the end of the body.
+3. Find the code and check `build.commit` as in steps 3 and 4 for Jira above.
+4. Make the change. Leave it on the current branch; don't commit, push or open a pull request unless the developer asks. If they do open one, add "Fixes #12" to its description so the issue closes when it merges.
+5. Comment on the issue with what you changed (files and a one-line summary): `gh issue comment 12 --repo acme/shop --body "…"`. Leave the issue open for review unless the developer says to close it.
+6. Finish with a list of issues and what you changed in each.
+
+## Fixing Linear issues
+
+Annotations filed to Linear become issues labeled `agentic-ui`, with the screenshot in the description. Read them with Linear's MCP server (`claude mcp add --transport http linear https://mcp.linear.app/mcp`). If it isn't connected, ask the developer to add it and stop.
+
+1. Find the issues:
+   - For "fix ENG-12", get that issue.
+   - For "the open agentic-ui issues", list the issues labeled `agentic-ui` that aren't done or canceled, in the team the developer names (ask if there are several).
+2. For each issue, take the annotation JSON from the "Agent context (annotation.json)" code block at the end of the description. Look at the screenshot too if you can open it; the selected element is outlined.
+3. Find the code and check `build.commit` as in steps 3 and 4 for Jira above.
+4. Make the change. Leave it on the current branch; don't commit, push or open a pull request unless the developer asks. If they do open one, put "ENG-12" in its branch name or title so Linear links it.
+5. Comment on the issue with what you changed (files and a one-line summary). Leave its state as it is unless the developer says otherwise.
+6. Finish with a list of issues and what you changed in each.
+
+## Fixing GitLab issues
+
+Annotations filed to GitLab become issues labeled `agentic-ui`, with the screenshot in the description. Read them with the GitLab CLI (`glab`). If it isn't signed in, ask the developer to run `glab auth login` (with `--hostname` for a self-managed GitLab) and stop.
+
+1. Find the issues:
+   - For "fix web/shop#12" or "fix GitLab issue 12", read it: `glab issue view 12 --repo web/shop --output json`. A bare "#12" could also be a GitHub issue or an Azure DevOps work item: if more than one is set up, ask which.
+   - For "the open agentic-ui issues", list them: `glab issue list --repo <group/name> --label agentic-ui --output json`. Without a project named, use the current repository's.
+2. For each issue, take the annotation JSON from the collapsed "Agent context (annotation.json)" block at the end of the description.
+3. Find the code and check `build.commit` as in steps 3 and 4 for Jira above.
+4. Make the change. Leave it on the current branch; don't commit, push or open a merge request unless the developer asks. If they do open one, add "Closes #12" to its description so the issue closes when it merges.
+5. Comment on the issue with what you changed (files and a one-line summary): `glab issue note 12 --repo web/shop --message "…"`. Leave the issue open for review unless the developer says to close it.
+6. Finish with a list of issues and what you changed in each.
