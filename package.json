@@ -1,6 +1,6 @@
 {
   "name": "agentic-ui-plugin",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "description": "The agentic-ui bridge: Claude Code plugin, and `npx -y github:<this repo> setup <agent>` for Codex, Grok Build, Gemini CLI, Cursor and Copilot.",
   "type": "module",

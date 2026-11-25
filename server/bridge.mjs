@@ -2795,11 +2795,11 @@ var require_validate = __commonJS({
         jsonPointer = $data;
         data = names_1.default.rootData;
       } else {
-        const matches = RELATIVE_JSON_POINTER.exec($data);
-        if (!matches)
+        const matches2 = RELATIVE_JSON_POINTER.exec($data);
+        if (!matches2)
           throw new Error(`Invalid JSON-pointer: ${$data}`);
-        const up = +matches[1];
-        jsonPointer = matches[2];
+        const up = +matches2[1];
+        jsonPointer = matches2[2];
         if (jsonPointer === "#") {
           if (up >= dataLevel)
             throw new Error(errorMsg("property/index", up));
@@ -3718,11 +3718,11 @@ var require_schemes = __commonJS({
         urnComponent.error = "URN can not be parsed";
         return urnComponent;
       }
-      const matches = urnComponent.path.match(URN_REG);
-      if (matches && matches[0] === urnComponent.path) {
+      const matches2 = urnComponent.path.match(URN_REG);
+      if (matches2 && matches2[0] === urnComponent.path) {
         const scheme = options.scheme || urnComponent.scheme || "urn";
-        urnComponent.nid = matches[1].toLowerCase();
-        urnComponent.nss = matches[2];
+        urnComponent.nid = matches2[1].toLowerCase();
+        urnComponent.nss = matches2[2];
         const urnScheme = `${scheme}:${options.nid || urnComponent.nid}`;
         const schemeHandler = getSchemeHandler(urnScheme);
         urnComponent.path = void 0;
@@ -4043,8 +4043,8 @@ var require_fast_uri = __commonJS({
     var URI_PARSE = /^(?:([^#/:?]+):)?(?:\/\/((?:([^#/?@]*)@)?(\[[^#/?\]]+\]|[^#/:?]*)(?::(\d*))?))?([^#?]*)(?:\?([^#]*))?(?:#((?:.|[\n\r])*))?/u;
     var AUTHORITY_PREFIX = /^(?:[^#/:?]+:)?\/\/([^/?#]*)/;
     var AUTHORITY_INTRODUCER_REGION = /^(?:[^#/:?]+:)?([/\\\t\n\r]*)/;
-    function getParseError(parsed, matches) {
-      if (matches[2] !== void 0 && parsed.path && parsed.path[0] !== "/") {
+    function getParseError(parsed, matches2) {
+      if (matches2[2] !== void 0 && parsed.path && parsed.path[0] !== "/") {
         return 'URI path must start with "/" when authority is present.';
       }
       if (typeof parsed.port === "number" && (parsed.port < 0 || parsed.port > 65535)) {
@@ -4066,9 +4066,9 @@ var require_fast_uri = __commonJS({
     function isIPLiteral(host) {
       return host[0] === "[" && host[host.length - 1] === "]";
     }
-    function hasMalformedComponentPercentEncoding(matches) {
-      const host = matches[4];
-      return hasMalformedPercentEncoding(matches[3]) || host !== void 0 && !isIPLiteral(host) && hasMalformedPercentEncoding(host) || hasMalformedPercentEncoding(matches[6]) || hasMalformedPercentEncoding(matches[7]) || hasMalformedPercentEncoding(matches[8]);
+    function hasMalformedComponentPercentEncoding(matches2) {
+      const host = matches2[4];
+      return hasMalformedPercentEncoding(matches2[3]) || host !== void 0 && !isIPLiteral(host) && hasMalformedPercentEncoding(host) || hasMalformedPercentEncoding(matches2[6]) || hasMalformedPercentEncoding(matches2[7]) || hasMalformedPercentEncoding(matches2[8]);
     }
     function canonicalizeHost(parsed, options, schemeHandler, isIP) {
       if (hasForbiddenDomainHost(parsed, options, schemeHandler, isIP)) {
@@ -4143,15 +4143,15 @@ var require_fast_uri = __commonJS({
           }
         }
       }
-      const matches = uri.match(URI_PARSE);
-      if (matches) {
-        parsed.scheme = matches[1];
-        parsed.userinfo = matches[3];
-        parsed.host = matches[4];
-        parsed.port = parseInt(matches[5], 10);
-        parsed.path = matches[6] || "";
-        parsed.query = matches[7];
-        parsed.fragment = matches[8];
+      const matches2 = uri.match(URI_PARSE);
+      if (matches2) {
+        parsed.scheme = matches2[1];
+        parsed.userinfo = matches2[3];
+        parsed.host = matches2[4];
+        parsed.port = parseInt(matches2[5], 10);
+        parsed.path = matches2[6] || "";
+        parsed.query = matches2[7];
+        parsed.fragment = matches2[8];
         if (parsed.scheme !== void 0) {
           if (VALID_SCHEME.test(parsed.scheme)) {
             parsed.scheme = parsed.scheme.toLowerCase();
@@ -4160,14 +4160,14 @@ var require_fast_uri = __commonJS({
             malformedScheme = true;
           }
         }
-        malformedPercentEncoding = hasMalformedComponentPercentEncoding(matches);
+        malformedPercentEncoding = hasMalformedComponentPercentEncoding(matches2);
         if (malformedPercentEncoding) {
           parsed.error = parsed.error || "URI contains malformed percent-encoding.";
         }
         if (isNaN(parsed.port)) {
-          parsed.port = matches[5];
+          parsed.port = matches2[5];
         }
-        const parseError = getParseError(parsed, matches);
+        const parseError = getParseError(parsed, matches2);
         if (parseError !== void 0) {
           parsed.error = parsed.error || parseError;
           malformedAuthorityOrPort = true;
@@ -6516,11 +6516,11 @@ var require_format = __commonJS({
           }
           function getFormat(fmtDef) {
             const code = fmtDef instanceof RegExp ? (0, codegen_1.regexpCode)(fmtDef) : opts.code.formats ? (0, codegen_1._)`${opts.code.formats}${(0, codegen_1.getProperty)(schema)}` : void 0;
-            const fmt = gen.scopeValue("formats", { key: schema, ref: fmtDef, code });
+            const fmt2 = gen.scopeValue("formats", { key: schema, ref: fmtDef, code });
             if (typeof fmtDef == "object" && !(fmtDef instanceof RegExp)) {
-              return [fmtDef.type || "string", fmtDef.validate, (0, codegen_1._)`${fmt}.validate`];
+              return [fmtDef.type || "string", fmtDef.validate, (0, codegen_1._)`${fmt2}.validate`];
             }
-            return ["string", fmtDef, fmt];
+            return ["string", fmtDef, fmt2];
           }
           function validCondition() {
             if (typeof formatDef == "object" && !(formatDef instanceof RegExp) && formatDef.async) {
@@ -7017,12 +7017,12 @@ var require_formats = __commonJS({
     var DATE = /^(\d\d\d\d)-(\d\d)-(\d\d)$/;
     var DAYS = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
     function date5(str) {
-      const matches = DATE.exec(str);
-      if (!matches)
+      const matches2 = DATE.exec(str);
+      if (!matches2)
         return false;
-      const year = +matches[1];
-      const month = +matches[2];
-      const day = +matches[3];
+      const year = +matches2[1];
+      const month = +matches2[2];
+      const day = +matches2[3];
       return month >= 1 && month <= 12 && day >= 1 && day <= (month === 2 && isLeapYear(year) ? 29 : DAYS[month]);
     }
     function compareDate(d1, d2) {
@@ -7037,16 +7037,16 @@ var require_formats = __commonJS({
     var TIME = /^(\d\d):(\d\d):(\d\d(?:\.\d+)?)(z|([+-])(\d\d)(?::?(\d\d))?)?$/i;
     function getTime(strictTimeZone) {
       return function time3(str) {
-        const matches = TIME.exec(str);
-        if (!matches)
+        const matches2 = TIME.exec(str);
+        if (!matches2)
           return false;
-        const hr = +matches[1];
-        const min = +matches[2];
-        const sec = +matches[3];
-        const tz = matches[4];
-        const tzSign = matches[5] === "-" ? -1 : 1;
-        const tzH = +(matches[6] || 0);
-        const tzM = +(matches[7] || 0);
+        const hr = +matches2[1];
+        const min = +matches2[2];
+        const sec = +matches2[3];
+        const tz = matches2[4];
+        const tzSign = matches2[5] === "-" ? -1 : 1;
+        const tzH = +(matches2[6] || 0);
+        const tzM = +(matches2[7] || 0);
         if (tzH > 23 || tzM > 59 || strictTimeZone && !tz)
           return false;
         if (hr <= 23 && min <= 59 && sec < 60)
@@ -7182,8 +7182,8 @@ var require_limit = __commonJS({
             ref: self.formats,
             code: opts.code.formats
           });
-          const fmt = gen.const("fmt", (0, codegen_1._)`${fmts}[${fCxt.schemaCode}]`);
-          cxt.fail$data((0, codegen_1.or)((0, codegen_1._)`typeof ${fmt} != "object"`, (0, codegen_1._)`${fmt} instanceof RegExp`, (0, codegen_1._)`typeof ${fmt}.compare != "function"`, compareCode(fmt)));
+          const fmt2 = gen.const("fmt", (0, codegen_1._)`${fmts}[${fCxt.schemaCode}]`);
+          cxt.fail$data((0, codegen_1.or)((0, codegen_1._)`typeof ${fmt2} != "object"`, (0, codegen_1._)`${fmt2} instanceof RegExp`, (0, codegen_1._)`typeof ${fmt2}.compare != "function"`, compareCode(fmt2)));
         }
         function validateFormat() {
           const format = fCxt.schema;
@@ -7193,15 +7193,15 @@ var require_limit = __commonJS({
           if (typeof fmtDef != "object" || fmtDef instanceof RegExp || typeof fmtDef.compare != "function") {
             throw new Error(`"${keyword}": format "${format}" does not define "compare" function`);
           }
-          const fmt = gen.scopeValue("formats", {
+          const fmt2 = gen.scopeValue("formats", {
             key: format,
             ref: fmtDef,
             code: opts.code.formats ? (0, codegen_1._)`${opts.code.formats}${(0, codegen_1.getProperty)(format)}` : void 0
           });
-          cxt.fail$data(compareCode(fmt));
+          cxt.fail$data(compareCode(fmt2));
         }
-        function compareCode(fmt) {
-          return (0, codegen_1._)`${fmt}.compare(${data}, ${schemaCode}) ${KWDs[keyword].fail} 0`;
+        function compareCode(fmt2) {
+          return (0, codegen_1._)`${fmt2}.compare(${data}, ${schemaCode}) ${KWDs[keyword].fail} 0`;
         }
       },
       dependencies: ["format"]
@@ -7353,6 +7353,12 @@ import { readFile, stat } from "node:fs/promises";
 import path3 from "node:path";
 import { fileURLToPath as fileURLToPath2, pathToFileURL } from "node:url";
 
+// packages/core/src/config.ts
+function filedLinks(a) {
+  const links = a.extensions?.links;
+  return links && typeof links === "object" ? links : {};
+}
+
 // packages/core/src/details.ts
 var ago = (s) => s < 60 ? `${Math.round(s)} s ago` : `${Math.round(s / 60)} min ago`;
 var rate = (v, good, poor) => v <= good ? "good" : v <= poor ? "needs work" : "poor";
@@ -7435,71 +7441,6 @@ function reportLines(r) {
   return out;
 }
 
-// packages/core/src/a11y.ts
-var CRITERIA = {
-  "1.1.1": "Non-text Content",
-  "1.2.1": "Audio-only and Video-only",
-  "1.2.2": "Captions (Prerecorded)",
-  "1.3.1": "Info and Relationships",
-  "1.3.2": "Meaningful Sequence",
-  "1.3.4": "Orientation",
-  "1.3.5": "Identify Input Purpose",
-  "1.4.1": "Use of Color",
-  "1.4.2": "Audio Control",
-  "1.4.3": "Contrast (Minimum)",
-  "1.4.4": "Resize Text",
-  "1.4.6": "Contrast (Enhanced)",
-  "1.4.10": "Reflow",
-  "1.4.11": "Non-text Contrast",
-  "1.4.12": "Text Spacing",
-  "2.1.1": "Keyboard",
-  "2.1.3": "Keyboard (No Exception)",
-  "2.2.1": "Timing Adjustable",
-  "2.2.2": "Pause, Stop, Hide",
-  "2.2.4": "Interruptions",
-  "2.4.1": "Bypass Blocks",
-  "2.4.2": "Page Titled",
-  "2.4.3": "Focus Order",
-  "2.4.4": "Link Purpose (In Context)",
-  "2.4.6": "Headings and Labels",
-  "2.4.7": "Focus Visible",
-  "2.4.9": "Link Purpose (Link Only)",
-  "2.4.11": "Focus Not Obscured (Minimum)",
-  "2.5.3": "Label in Name",
-  "2.5.8": "Target Size (Minimum)",
-  "3.1.1": "Language of Page",
-  "3.1.2": "Language of Parts",
-  "3.2.5": "Change on Request",
-  "3.3.2": "Labels or Instructions",
-  "4.1.1": "Parsing",
-  "4.1.2": "Name, Role, Value",
-  "4.1.3": "Status Messages"
-};
-function criterionLabel(id) {
-  const name = CRITERIA[id];
-  return name ? `${id} (${name})` : id;
-}
-function wcagLabel(f) {
-  return f.wcag.length ? `WCAG ${f.wcag.map(criterionLabel).join(", ")}` : "Best practice";
-}
-var impactLabel = (i) => i.charAt(0).toUpperCase() + i.slice(1);
-function a11yLines(f) {
-  if (!f) return [];
-  const flat = (s) => s.replace(/\s*\n\s*/g, " ").trim();
-  const out = [
-    `Accessibility: ${f.rule}, ${impactLabel(f.impact)}${f.review ? " (needs review: checked by hand)" : ""} \xB7 ${wcagLabel(f)} \xB7 ${f.standard}, ${f.engine}`
-  ];
-  if (f.helpUrl) out.push(`Rule details: ${f.helpUrl}`);
-  if (f.nodes.length === 1) {
-    out.push(`Why it fails: ${flat(f.nodes[0].why)}`);
-  } else if (f.nodes.length > 1) {
-    out.push("Why it fails:", ...f.nodes.map((nd, i) => `- ${i + 1}) ${nd.selector}: ${flat(nd.why)}`));
-  }
-  const them = f.nodes.length === 1 ? "this element" : "these elements";
-  out.push(`Verify: after the fix, call check_accessibility with this note's ID (agentic-ui MCP server) to run "${f.rule}" again on ${them} in the developer's browser. Elsewhere, run axe-core's "${f.rule}" rule on ${them} (e.g. axe.run(element, { runOnly: ['${f.rule}'] })): it should report no violations.`);
-  return out;
-}
-
 // packages/core/src/markdown.ts
 function loc(s) {
   return [s.file, s.line, s.line !== void 0 ? s.column : void 0].filter((p) => p !== void 0).join(":");
@@ -7549,12 +7490,18 @@ function title(a) {
       return `Area with ${t.elements.length + (t.omitted ?? 0)} elements`;
   }
 }
+function ticketLine(a, key) {
+  const url2 = filedLinks(a)[String(a.extensions?.pickedFrom ?? "")];
+  return `Ticket: ${key}${url2 ? ` (${url2})` : ""}`;
+}
 function annotationToMarkdown(a, index) {
   const p = a.page;
   const lines = [
     `### ${index}. ${title(a)}`,
     `ID: ${a.id}`,
     `Comment: ${a.comment}`,
+    // A teammate's tracker issue the user picked and sent on: the agent can read or update it.
+    ...typeof a.extensions?.picked === "string" ? [ticketLine(a, a.extensions.picked)] : [],
     // The ticket fields the tester confirmed (Improve or the form), after their own words.
     ...a.report?.summary ? [`Summary: ${a.report.summary}`] : [],
     ...reportLines(a.report),
@@ -7575,7 +7522,6 @@ function annotationToMarkdown(a, index) {
     });
     if (t.kind === "area" && t.omitted) lines.push(`(${t.omitted} more elements not listed)`);
   }
-  lines.push(...a11yLines(a.a11y));
   if (a.flow) lines.push(`Flow step: ${a.flow.step} of recorded flow flow-${a.flow.id}, ${clockOf(a.flow.t)} into the recording`);
   const details = detailLines(a.details);
   if (details.length) lines.push("Details:", ...details.map((l) => `- ${l}`));
@@ -7587,6 +7533,390 @@ function annotationToMarkdown(a, index) {
 function toMarkdown(batch) {
   const header = `## UI annotations (${batch.length})`;
   return [header, ...batch.map((a, i) => annotationToMarkdown(a, i + 1))].join("\n\n") + "\n";
+}
+
+// packages/core/src/replay.ts
+var EV = { FullSnapshot: 2, Incremental: 3, Meta: 4 };
+var SRC = { Mutation: 0, MouseInteraction: 2, Scroll: 3, Input: 5 };
+var NODE = { Document: 0, DocumentType: 1, Element: 2, Text: 3, CDATA: 4, Comment: 5 };
+var PAGE_LOAD_TAG = "agentic-ui-page";
+var CLICKS = { 2: "Clicked", 3: "Right-clicked", 4: "Double-clicked", 9: "Tapped" };
+var ReplayDom = class {
+  nodes = /* @__PURE__ */ new Map();
+  root = null;
+  url = "";
+  size = null;
+  apply(e) {
+    if (e.type === EV.Meta) {
+      this.url = String(e.data?.href ?? "");
+      if (e.data?.width) this.size = { width: e.data.width, height: e.data.height };
+    } else if (e.type === EV.FullSnapshot) {
+      this.nodes.clear();
+      this.root = this.build(e.data?.node, void 0);
+    } else if (e.type === EV.Incremental) {
+      const d = e.data;
+      if (d?.source === SRC.Mutation) this.mutate(d);
+      else if (d?.source === SRC.Input) {
+        const n = this.nodes.get(d.id);
+        if (n) {
+          n.value = String(d.text ?? "");
+          n.checked = !!d.isChecked;
+        }
+      }
+    }
+  }
+  node(id) {
+    return this.nodes.get(id);
+  }
+  build(s, parent) {
+    if (!s || typeof s.id !== "number") return null;
+    const n = { id: s.id, type: s.type, attrs: {}, children: [], ...parent ? { parent } : {} };
+    if (s.type === NODE.Element) {
+      n.tag = String(s.tagName ?? "div").toLowerCase();
+      for (const [k, v] of Object.entries(s.attributes ?? {})) if (typeof v === "string" || typeof v === "number" || v === true) n.attrs[k] = v === true ? "" : String(v);
+    } else if (s.type === NODE.Text || s.type === NODE.Comment || s.type === NODE.CDATA) {
+      n.text = String(s.textContent ?? "");
+    }
+    this.nodes.set(n.id, n);
+    for (const c of s.childNodes ?? []) {
+      const child = this.build(c, n);
+      if (child) n.children.push(child);
+    }
+    return n;
+  }
+  mutate(d) {
+    for (const r of d.removes ?? []) {
+      const n = this.nodes.get(r.id);
+      if (!n) continue;
+      const p = n.parent ?? this.nodes.get(r.parentId);
+      if (p) p.children = p.children.filter((c) => c !== n);
+      this.forget(n);
+    }
+    let pending = [...d.adds ?? []];
+    for (let pass = 0; pending.length && pass < 50; pass++) {
+      const next = [];
+      for (const a of pending) if (!this.add(a)) next.push(a);
+      if (next.length === pending.length) break;
+      pending = next;
+    }
+    for (const t of d.texts ?? []) {
+      const n = this.nodes.get(t.id);
+      if (n) n.text = t.value ?? "";
+    }
+    for (const a of d.attributes ?? []) {
+      const n = this.nodes.get(a.id);
+      if (!n) continue;
+      for (const [k, v] of Object.entries(a.attributes ?? {})) {
+        if (v === null) delete n.attrs[k];
+        else if (typeof v === "string") n.attrs[k] = v;
+        else if (k === "style" && v && typeof v === "object") n.attrs.style = styleText(n.attrs.style ?? "", v);
+      }
+    }
+  }
+  add(a) {
+    const parent = this.nodes.get(a.parentId);
+    if (!parent) return false;
+    const next = a.nextId != null ? this.nodes.get(a.nextId) : void 0;
+    const prev = a.previousId != null ? this.nodes.get(a.previousId) : void 0;
+    if (a.nextId != null && !next && !prev) return false;
+    const old = this.nodes.get(a.node?.id);
+    if (old) {
+      if (old.parent) old.parent.children = old.parent.children.filter((c) => c !== old);
+      this.forget(old);
+    }
+    const n = this.build(a.node, parent);
+    if (!n) return true;
+    const i = next ? parent.children.indexOf(next) : prev ? parent.children.indexOf(prev) + 1 : -1;
+    if (i >= 0) parent.children.splice(i, 0, n);
+    else parent.children.push(n);
+    return true;
+  }
+  forget(n) {
+    this.nodes.delete(n.id);
+    for (const c of n.children) this.forget(c);
+  }
+};
+function styleText(current, change) {
+  const props = new Map(current.split(";").map((s) => s.split(":")).filter((p) => p.length >= 2).map(([k, ...v]) => [k.trim(), v.join(":").trim()]));
+  for (const [k, v] of Object.entries(change)) {
+    if (v === false || v == null) props.delete(k);
+    else props.set(k, Array.isArray(v) ? `${v[0]}${v[1] ? ` !${v[1]}` : ""}` : String(v));
+  }
+  return [...props].map(([k, v]) => `${k}: ${v}`).join("; ");
+}
+var ANCHOR_ATTRS = ["data-testid", "data-test", "data-cy", "data-qa", "id", "name", "aria-label", "role", "type", "href"];
+function describeNode(n) {
+  if (!n) return "an element that is no longer on the page";
+  const el = n.type === NODE.Element ? n : n.parent;
+  if (!el?.tag) return "the page";
+  const attrs = ANCHOR_ATTRS.filter((k) => el.attrs[k] !== void 0 && el.attrs[k] !== "").slice(0, 2).map((k) => k === "id" ? `#${el.attrs.id}` : `[${k}="${clip(el.attrs[k], 60)}"]`).join("");
+  const classes = attrs ? "" : (el.attrs.class ?? "").split(/\s+/).filter(Boolean).slice(0, 3).map((c) => `.${c}`).join("");
+  const text2 = clip(textOf(el).replace(/\s+/g, " ").trim(), 60);
+  return `${el.tag}${attrs || classes}${text2 ? ` "${text2}"` : ""}`;
+}
+function textOf(n) {
+  if (n.type === NODE.Text) return n.text ?? "";
+  if (n.tag === "script" || n.tag === "style") return "";
+  return n.children.map(textOf).join(" ");
+}
+var clip = (s, max) => s.length > max ? `${s.slice(0, max - 1)}\u2026` : s;
+function parseSelector(sel) {
+  const out = [];
+  const parts = sel.trim().replace(/\s*>\s*/g, " > ").split(/\s+/);
+  let child = false;
+  for (const p of parts) {
+    if (p === ">") {
+      child = true;
+      continue;
+    }
+    const c = { classes: [], attrs: [] };
+    const tag = /^([a-zA-Z][\w-]*|\*)/.exec(p);
+    if (tag && tag[1] !== "*") c.tag = tag[1].toLowerCase();
+    const re = /#([\w-]+)|\.([\w-]+)|\[([\w:-]+)(?:=\s*"?([^"\]]*)"?)?\]/y;
+    let m;
+    let pos = tag ? tag[0].length : 0;
+    re.lastIndex = pos;
+    while (pos < p.length && (m = re.exec(p))) {
+      if (m[1]) c.id = m[1];
+      if (m[2]) c.classes.push(m[2]);
+      if (m[3]) c.attrs.push([m[3], m[4] ?? null]);
+      pos = re.lastIndex;
+    }
+    if (pos < p.length) return null;
+    out.push({ c, child });
+    child = false;
+  }
+  return out.length ? out : null;
+}
+function matchesCompound(n, c) {
+  if (n.type !== NODE.Element) return false;
+  if (c.tag && n.tag !== c.tag) return false;
+  if (c.id && n.attrs.id !== c.id) return false;
+  const cls = (n.attrs.class ?? "").split(/\s+/);
+  if (c.classes.some((k) => !cls.includes(k))) return false;
+  return c.attrs.every(([k, v]) => n.attrs[k] !== void 0 && (v === null || n.attrs[k] === v));
+}
+function matches(n, chain) {
+  let i = chain.length - 1;
+  if (!matchesCompound(n, chain[i].c)) return false;
+  let cur = n.parent;
+  while (i > 0) {
+    const needChild = chain[i].child;
+    i--;
+    while (cur && !matchesCompound(cur, chain[i].c)) {
+      if (needChild) return false;
+      cur = cur.parent;
+    }
+    if (!cur) return false;
+    cur = cur.parent;
+  }
+  return true;
+}
+function querySelectorAll(root, sel) {
+  const chain = parseSelector(sel);
+  if (!chain) return null;
+  const out = [];
+  const walk = (n) => {
+    if (matches(n, chain)) out.push(n);
+    n.children.forEach(walk);
+  };
+  if (root) walk(root);
+  return out;
+}
+var VOID = /* @__PURE__ */ new Set(["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"]);
+var escText = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+var escAttr = (s) => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
+function toHtml(n, indent = 0) {
+  const pad = "  ".repeat(indent);
+  if (n.type === NODE.Text) {
+    const t = (n.text ?? "").replace(/\s+/g, " ").trim();
+    return t ? `${pad}${escText(clip(t, 400))}
+` : "";
+  }
+  if (n.type === NODE.Comment || n.type === NODE.CDATA || n.type === NODE.DocumentType) return "";
+  if (n.type === NODE.Document) return n.children.map((c) => toHtml(c, indent)).join("");
+  const tag = n.tag ?? "div";
+  if (tag === "script" || tag === "noscript" || tag === "style" || tag === "link" || tag === "meta") return "";
+  const attrs = Object.entries(n.attrs).filter(([k]) => !k.startsWith("rr_") && k !== "_cssText" && k !== "d" && k !== "style" || k === "style" && n.attrs.style.length < 120);
+  if (n.value !== void 0) attrs.push(["value", n.value]);
+  if (n.checked) attrs.push(["checked", ""]);
+  const open2 = `${pad}<${tag}${attrs.map(([k, v]) => v === "" ? ` ${k}` : ` ${k}="${escAttr(clip(v, 300))}"`).join("")}>`;
+  if (VOID.has(tag)) return `${open2}
+`;
+  if (tag === "svg") return `${open2}\u2026</svg>
+`;
+  const inner = n.children.map((c) => toHtml(c, indent + 1)).join("");
+  if (!inner) return `${open2}</${tag}>
+`;
+  const oneLine = !inner.slice(0, -1).includes("\n") && inner.length < 120;
+  return oneLine ? `${open2}${inner.trim()}</${tag}>
+` : `${open2}
+${inner}${pad}</${tag}>
+`;
+}
+var AFTER_MS = 2e3;
+function eventsOf(file2) {
+  const events = (file2.replay?.events ?? []).slice().sort((a, b) => a.timestamp - b.timestamp);
+  const started = file2.flow?.startedAt ? Date.parse(file2.flow.startedAt) : NaN;
+  return { events, start: Number.isFinite(started) ? started : events[0]?.timestamp ?? 0 };
+}
+function replaySteps(file2) {
+  return (file2.steps ?? []).filter((a) => a.flow).map((a) => {
+    const sel = a.target?.elements?.[0]?.selector ?? a.target?.element?.selector;
+    return { step: a.flow.step, t: a.flow.t, ...a.id ? { id: a.id } : {}, ...a.comment ? { comment: a.comment } : {}, ...sel ? { selector: sel } : {} };
+  }).sort((a, b) => a.step - b.step);
+}
+function flowTimeline(file2) {
+  const { events, start } = eventsOf(file2);
+  const dom = new ReplayDom();
+  const out = [];
+  let watching = null;
+  let lastInput = null;
+  const marked = events.some((e) => e.type === 5 && e.data?.tag === PAGE_LOAD_TAG);
+  let lastHref = null;
+  for (const e of events) {
+    const t = Math.max(0, e.timestamp - start);
+    if (watching && e.timestamp > watching.until) watching = null;
+    if (watching && e.type === EV.Incremental && e.data?.source === SRC.Mutation) {
+      for (const line of changeLines(dom, e.data)) {
+        if (watching.seen.has(line) || watching.seen.size >= 8) continue;
+        watching.seen.add(line);
+        (watching.moment.after ??= []).push(`+${((e.timestamp - (watching.until - AFTER_MS)) / 1e3).toFixed(1)}s ${line}`);
+      }
+    }
+    dom.apply(e);
+    if (e.type === 5 && marked && e.data?.tag === PAGE_LOAD_TAG) out.push({ t, kind: "page", text: `Page: ${e.data.payload?.href ?? ""}` });
+    else if (e.type === EV.Meta) {
+      const href = String(e.data?.href ?? "");
+      if (!marked && href !== lastHref) out.push({ t, kind: "page", text: `Page: ${href}` });
+      lastHref = href;
+    } else if (e.type === EV.Incremental && e.data?.source === SRC.MouseInteraction && CLICKS[e.data.type]) {
+      const m = { t, kind: "click", text: `${CLICKS[e.data.type]} ${describeNode(dom.node(e.data.id))}` };
+      out.push(m);
+      watching = { moment: m, until: e.timestamp + AFTER_MS, seen: /* @__PURE__ */ new Set() };
+      lastInput = null;
+    } else if (e.type === EV.Incremental && e.data?.source === SRC.Input) {
+      const n = dom.node(e.data.id);
+      const text2 = `Typed in ${describeNode(n)}: ${n?.attrs.type === "checkbox" || n?.attrs.type === "radio" ? e.data.isChecked ? "checked" : "unchecked" : JSON.stringify(clip(String(e.data.text ?? ""), 80))}`;
+      if (lastInput && lastInput.text.startsWith(`Typed in ${describeNode(n)}:`)) {
+        lastInput.text = text2;
+      } else {
+        lastInput = { t, kind: "input", text: text2 };
+        out.push(lastInput);
+      }
+    }
+  }
+  for (const s of replaySteps(file2)) out.push({ t: s.t, kind: "step", text: `Step ${s.step}${s.comment ? `: ${clip(s.comment.replace(/\s+/g, " "), 200)}` : ""}${s.selector ? ` (${s.selector})` : ""}` });
+  for (const p of file2.events ?? []) out.push({ t: p.t, kind: p.kind, text: `${p.kind === "network" ? "Failed request" : p.kind === "error" ? "Error" : "Warning"}: ${clip(p.message, 200)}${p.count > 1 ? ` \xD7${p.count}` : ""}` });
+  return out.sort((a, b) => a.t - b.t);
+}
+function changeLines(dom, d) {
+  const lines = [];
+  for (const a of d.attributes ?? []) {
+    const n = dom.node(a.id);
+    if (!n) continue;
+    for (const [k, v] of Object.entries(a.attributes ?? {})) {
+      if (k === "class") {
+        const before = new Set((n.attrs.class ?? "").split(/\s+/).filter(Boolean));
+        const after = new Set(typeof v === "string" ? v.split(/\s+/).filter(Boolean) : []);
+        const added2 = [...after].filter((c) => !before.has(c));
+        const removed2 = [...before].filter((c) => !after.has(c));
+        if (added2.length) lines.push(`${describeNode(n)} got class ${added2.join(" ")}`);
+        if (removed2.length) lines.push(`${describeNode(n)} lost class ${removed2.join(" ")}`);
+      } else if (["disabled", "aria-busy", "aria-expanded", "aria-hidden", "hidden", "aria-invalid", "open"].includes(k)) {
+        lines.push(`${describeNode(n)} ${v === null ? `lost ${k}` : `got ${k}="${clip(String(v), 40)}"`}`);
+      }
+    }
+  }
+  for (const t of d.texts ?? []) {
+    const n = dom.node(t.id);
+    const v = String(t.value ?? "").replace(/\s+/g, " ").trim();
+    if (n && v && v !== (n.text ?? "").replace(/\s+/g, " ").trim()) lines.push(`text of ${describeNode(n.parent)} changed to "${clip(v, 80)}"`);
+  }
+  const added = /* @__PURE__ */ new Map();
+  for (const a of d.adds ?? []) if (a.node?.type === NODE.Element) added.set(a.parentId, (added.get(a.parentId) ?? 0) + 1);
+  for (const [p, k] of added) if (dom.node(p)) lines.push(`${k} element${k === 1 ? "" : "s"} added to ${describeNode(dom.node(p))}`);
+  const removed = /* @__PURE__ */ new Map();
+  for (const r of d.removes ?? []) if (dom.node(r.id)?.type === NODE.Element) removed.set(r.parentId, (removed.get(r.parentId) ?? 0) + 1);
+  for (const [p, k] of removed) if (dom.node(p)) lines.push(`${k} element${k === 1 ? "" : "s"} removed from ${describeNode(dom.node(p))}${dom.node(p).children.filter((c) => c.type === NODE.Element).length === k ? " (now empty)" : ""}`);
+  return lines;
+}
+function domAt(file2, t) {
+  const { events, start } = eventsOf(file2);
+  const dom = new ReplayDom();
+  for (const e of events) {
+    if (e.timestamp - start > t) break;
+    dom.apply(e);
+  }
+  return dom;
+}
+var fmt = (ms2) => {
+  const s = Math.floor(ms2 / 1e3);
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}.${String(Math.floor(ms2 % 1e3 / 100))}`;
+};
+function inspectFlow(file2, opts = {}) {
+  if (!file2.replay?.events?.length) return "This flow has no replay: it was recorded as video only. Look at the video instead.";
+  const timeline = flowTimeline(file2);
+  const steps = replaySteps(file2);
+  if (opts.step === void 0 && opts.at === void 0 && !opts.selector) {
+    const lines = timeline.map((m) => `${fmt(m.t)}  ${m.text}${m.after?.length ? `
+${m.after.map((a) => `          ${a}`).join("\n")}` : ""}`);
+    return [
+      `Flow replay${file2.flow?.page?.url ? ` starting on ${file2.flow.page.url}` : ""}${file2.flow?.durationMs ? `, ${fmt(file2.flow.durationMs)} long` : ""}. Inputs are masked (*), so typed values show as stars.`,
+      steps.length ? `Steps: ${steps.map((s) => `${s.step} at ${fmt(s.t)}`).join(", ")}. Pass a step to see the page's HTML at that moment.` : "Pass a time (at, in ms) to see the page's HTML at that moment.",
+      "",
+      ...lines
+    ].join("\n");
+  }
+  const step = opts.step !== void 0 ? steps.find((s) => s.step === opts.step) : void 0;
+  if (opts.step !== void 0 && !step) return `There is no step ${opts.step}. Steps: ${steps.map((s) => s.step).join(", ") || "none"}.`;
+  const t = step ? step.t : opts.at ?? (file2.flow?.durationMs ?? Number.MAX_SAFE_INTEGER);
+  const dom = domAt(file2, t);
+  if (!dom.root) return `The replay has no page yet at ${fmt(t)}.`;
+  const sel = opts.selector ?? step?.selector;
+  let html = "";
+  let where = "the whole page";
+  if (sel) {
+    const found = querySelectorAll(dom.root, sel);
+    if (found === null) where = `the whole page (the selector ${sel} is beyond what this can match: use tag, #id, .class, [attr="value"], spaces and >)`;
+    else if (!found.length) where = `the whole page (nothing matched ${sel} at that moment)`;
+    else {
+      const around = opts.around ?? 2;
+      const shown = found.slice(0, 5).map((n) => {
+        let a = n;
+        for (let i = 0; i < around && a.parent?.tag; i++) a = a.parent;
+        return a;
+      });
+      html = [...new Set(shown)].map((n) => toHtml(n)).join("\n");
+      where = `${found.length} element${found.length === 1 ? "" : "s"} matching ${sel}${found.length > 5 ? " (first 5)" : ""}, with ${around} level${around === 1 ? "" : "s"} of parents`;
+    }
+  }
+  if (!html) {
+    const body = querySelectorAll(dom.root, "body")?.[0] ?? dom.root;
+    html = toHtml(body);
+  }
+  const max = opts.max ?? 4e4;
+  if (html.length > max) html = `${html.slice(0, max)}
+\u2026 (cut at ${max} characters: pass a selector to see less)`;
+  const before = timeline.filter((m) => m.t <= t && m.t > t - 1e4).slice(-8);
+  return [
+    `${step ? `Step ${step.step}${step.comment ? `: ${clip(step.comment.replace(/\s+/g, " "), 200)}` : ""}` : "Moment"} at ${fmt(t)}, on ${dom.url || file2.flow?.page?.url || "the page"}.`,
+    before.length ? `
+Just before:
+${before.map((m) => `${fmt(m.t)}  ${m.text}${m.after?.length ? `
+${m.after.map((a) => `          ${a}`).join("\n")}` : ""}`).join("\n")}` : "",
+    `
+HTML of ${where} (scripts, styles and SVG paths left out):
+`,
+    html
+  ].join("\n");
+}
+
+// packages/core/src/flow-note.ts
+var flowNoteId = (recording) => `flow-${recording}`;
+function flowNoteData(a) {
+  const f = a.extensions?.flow;
+  return f && typeof f === "object" && typeof f.recording === "string" ? f : void 0;
 }
 
 // packages/adapter-react/src/sourcemap.ts
@@ -7861,11 +8191,14 @@ var FileStore = class {
 
 // packages/bridge/src/server.ts
 var VERSION = "0.0.0";
-var BRIDGE_API = 7;
-var CHECK_TTL_MS = 5 * 6e4;
+var BRIDGE_API = 8;
+var DRAFT_WAIT_MAX_S = 30;
+var DRAFT_TTL_MS = 15 * 6e4;
+var DRAFT_ID = /^[A-Za-z0-9_-]{1,64}$/;
 var MAX_BODY = 5 * 1024 * 1024;
 var MAX_VIDEO = 300 * 1024 * 1024;
 var VIDEO_TYPES = { "video/webm": "webm", "video/mp4": "mp4" };
+var MAX_REPLAY = 200 * 1024 * 1024;
 var LOCAL_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
 var SETTABLE = ["acknowledged", "resolved", "dismissed"];
 var EVENT_LOG_SIZE = 500;
@@ -7916,11 +8249,11 @@ async function saveBody(req, file2, max) {
   try {
     for await (const chunk of req) {
       size += chunk.length;
-      if (size > max) throw new HttpError(413, "video too large");
+      if (size > max) throw new HttpError(413, "file too large");
       if (!out.write(chunk)) await new Promise((r) => out.once("drain", r));
     }
     await new Promise((resolve, reject) => out.end((err) => err ? reject(err) : resolve()));
-    if (size === 0) throw new HttpError(400, "empty video");
+    if (size === 0) throw new HttpError(400, "empty file");
     renameSync2(tmp, file2);
   } catch (err) {
     out.destroy();
@@ -7945,10 +8278,6 @@ var EventHub = class {
   /** The session feed changed (the side panel's Claude Code tab). */
   feed(data) {
     this.emit("feed", data);
-  }
-  /** The agent asks a browser tab to run an accessibility rule again. */
-  check(request) {
-    this.emit("check", request);
   }
   emit(type, data) {
     const event = { id: ++this.seq, event: type, data };
@@ -8001,11 +8330,11 @@ var EventHub = class {
    * `after`, only ones that arrive during the wait. `cursor` goes in the next call.
    * With a session, also returns (and removes) that session's inbox.
    */
-  wait(ms2, after, session, onClose) {
+  wait(ms2, after, session, onClose, wake) {
     const since = after ?? this.seq;
     const newer = () => this.arrivals.filter((e) => e.seq > since).map((e) => e.annotation);
     const result = () => ({ annotations: newer(), cursor: this.seq, ...session ? { inbox: this.drain(session) } : {} });
-    if (newer().length > 0 || session && this.inboxes.has(session)) return Promise.resolve(result());
+    if (newer().length > 0 || session && this.inboxes.has(session) || wake && this.inboxes.has(wake)) return Promise.resolve(result());
     return new Promise((resolve) => {
       const done = () => {
         clearTimeout(timer);
@@ -8045,11 +8374,19 @@ async function startDaemon(opts) {
   const asks = /* @__PURE__ */ new Map();
   const askWaiters = /* @__PURE__ */ new Map();
   const uncollected = /* @__PURE__ */ new Map();
-  const checks = /* @__PURE__ */ new Map();
-  const checkWaiters = /* @__PURE__ */ new Map();
-  const dropOldChecks = () => {
-    const now = Date.now();
-    for (const [id, c] of checks) if (now - c.created > CHECK_TTL_MS) checks.delete(id);
+  const drafts = /* @__PURE__ */ new Map();
+  const settleDraft = (d, patch) => {
+    Object.assign(d, patch);
+    for (const w of [...d.waiters]) w();
+  };
+  const assignDraft = (d, except) => {
+    const target = sessionList().find((x) => x.connected && x.id !== except);
+    if (!target) return false;
+    d.session = target.id;
+    d.agent = target.agent;
+    d.state = "open";
+    hub.deliver(target.id, { type: "draft", id: d.id, comment: d.request.comment, page: d.request.page });
+    return true;
   };
   const feed = [];
   const sessions = /* @__PURE__ */ new Map();
@@ -8120,6 +8457,10 @@ async function startDaemon(opts) {
     }
     lastClaim.delete(session);
     if (released.length) hub.arrived(released);
+    for (const d of drafts.values()) {
+      if (d.session !== session || d.state !== "open" && d.state !== "taken") continue;
+      if (!assignDraft(d, session)) settleDraft(d, { state: "failed", error: "The agent session ended before it drafted the ticket." });
+    }
     const next = sessionList().find((x) => x.connected);
     if (next) handOver(next.id);
     hub.feed({ sessions: sessionList() });
@@ -8133,6 +8474,10 @@ async function startDaemon(opts) {
         sessions.delete(s.id);
         hub.feed({ sessions: sessionList() });
       }
+    }
+    for (const d of [...drafts.values()]) if (now - d.created > DRAFT_TTL_MS) {
+      settleDraft(d, { state: "failed", error: "The agent didn't answer in time." });
+      drafts.delete(d.id);
     }
   }, 15e3);
   sweep.unref();
@@ -8277,6 +8622,14 @@ async function startDaemon(opts) {
       await saveBody(req, target, MAX_VIDEO);
       return ok({ ok: true, file: path5.relative(root, target).split(path5.sep).join("/") });
     }
+    const replay = method === "POST" ? /^\/flows\/([A-Za-z0-9_-]{1,100})\/replay$/.exec(p) : null;
+    if (replay) {
+      if (String(req.headers["content-type"] ?? "").split(";")[0].trim().toLowerCase() !== "application/json") throw new HttpError(415, "expected an application/json body");
+      mkdirSync3(paths.flows, { recursive: true });
+      const target = path5.join(paths.flows, `flow-${replay[1]}.json`);
+      await saveBody(req, target, MAX_REPLAY);
+      return ok({ ok: true, file: path5.relative(root, target).split(path5.sep).join("/") });
+    }
     if (method === "GET" && p === "/annotations") {
       const ids = url2.searchParams.get("ids");
       if (ids !== null) {
@@ -8349,93 +8702,6 @@ async function startDaemon(opts) {
       feedOf.set(open2.id, addEntry({ kind: "question", session, askId: open2.id, note: id, comment: a.comment, text: question, ...options.length ? { options } : {}, open: true }).id);
       publishAsk(id);
       return ok({ ask: publicAsk(open2) });
-    }
-    const checkOn = p.match(/^\/annotations\/([^/]+)\/check$/);
-    if (method === "POST" && checkOn) {
-      const id = decodeURIComponent(checkOn[1]);
-      const body = await readJson(req);
-      const session = typeof body?.session === "string" && body.session ? body.session.slice(0, 100) : "";
-      if (!session) throw new HttpError(400, "expected { session, rule? }");
-      const a = store.get(id);
-      if (!a) throw new HttpError(404, `no annotation with id ${id}`);
-      const rule = typeof body.rule === "string" && /^[a-z0-9-]{1,80}$/.test(body.rule) ? body.rule : a.a11y?.rule;
-      if (!rule) throw new HttpError(400, 'this note has no accessibility finding; pass the axe-core rule to check, e.g. "button-name"');
-      const t = a.target;
-      const elements = t.kind === "text" ? [t.element] : t.elements;
-      if (!elements.length) throw new HttpError(400, "this note has no elements to check");
-      touch(session);
-      dropOldChecks();
-      const request = {
-        id: randomBytes2(9).toString("base64url"),
-        note: id,
-        rule,
-        page: a.page.url,
-        elements,
-        selectors: a.a11y?.rule === rule ? a.a11y.nodes.map((n) => n.selector) : []
-      };
-      checks.set(request.id, { request, session, created: Date.now() });
-      hub.check(request);
-      return ok({ check: request });
-    }
-    if (method === "GET" && p === "/checks") {
-      dropOldChecks();
-      return ok({ checks: [...checks.values()].filter((c) => !c.result).map((c) => c.request) });
-    }
-    const checkAt = p.match(/^\/checks\/([^/]+)(\/result|\/cancel)?$/);
-    if (checkAt) {
-      const checkId = decodeURIComponent(checkAt[1]);
-      const c = checks.get(checkId);
-      const wake = () => {
-        for (const fn of [...checkWaiters.get(checkId) ?? []]) fn();
-      };
-      if (method === "POST" && checkAt[2] === "/result") {
-        const body = await readJson(req);
-        const r = body?.result;
-        if (!r || typeof r.ok !== "boolean") throw new HttpError(400, "expected { result }");
-        if (!c || c.result) return ok({ accepted: false });
-        const list = (v) => Array.isArray(v) ? v.filter((x) => typeof x === "string").slice(0, 200) : [];
-        const nodes = (v) => Array.isArray(v) ? v.filter((x) => !!x && typeof x.selector === "string").slice(0, 200).map((x) => ({ selector: x.selector.slice(0, 500), why: String(x.why ?? "").slice(0, 1e3) })) : [];
-        c.result = {
-          ok: r.ok,
-          passed: list(r.passed),
-          failed: nodes(r.failed),
-          review: nodes(r.review),
-          inapplicable: list(r.inapplicable),
-          missing: list(r.missing),
-          ...typeof r.message === "string" ? { message: r.message.slice(0, 2e3) } : {},
-          ...typeof r.engine === "string" ? { engine: r.engine.slice(0, 80) } : {},
-          ...typeof r.page === "string" ? { page: r.page.slice(0, 500) } : {}
-        };
-        wake();
-        return ok({ accepted: true });
-      }
-      if (method === "POST" && checkAt[2] === "/cancel") {
-        checks.delete(checkId);
-        wake();
-        return ok({ cancelled: !!c });
-      }
-      if (method === "GET" && !checkAt[2]) {
-        if (!c) return ok({ result: null, open: false });
-        if (!c.result) {
-          const seconds = Math.min(Math.max(Number(url2.searchParams.get("timeout") ?? 30) || 30, 1), 60);
-          await new Promise((resolve) => {
-            const set2 = checkWaiters.get(checkId) ?? /* @__PURE__ */ new Set();
-            const done = () => {
-              clearTimeout(timer);
-              set2.delete(done);
-              resolve();
-            };
-            const timer = setTimeout(done, seconds * 1e3);
-            set2.add(done);
-            checkWaiters.set(checkId, set2);
-            req.on("close", done);
-          });
-        }
-        const now = checks.get(checkId);
-        if (res.destroyed) return;
-        if (now?.result) checks.delete(checkId);
-        return ok({ result: now?.result ?? null, open: !!now });
-      }
     }
     const askWait = p.match(/^\/asks\/([^/]+)(\/detach)?$/);
     if (askWait) {
@@ -8523,6 +8789,75 @@ async function startDaemon(opts) {
       touch(session, str(body?.client), str(body?.agent));
       return ok({ ok: true });
     }
+    if (method === "POST" && p === "/drafts") {
+      const body = await readJson(req);
+      const str = (v, max) => typeof v === "string" ? v.slice(0, max) : "";
+      const request = {
+        system: str(body?.system, 4e4),
+        user: str(body?.user, 2e5),
+        comment: str(body?.comment, 2e3),
+        page: str(body?.page, 2e3),
+        ...body?.schema && typeof body.schema === "object" ? { schema: body.schema } : {},
+        ...typeof body?.image === "string" && SCREENSHOT.test(body.image) ? { image: body.image } : {}
+      };
+      if (!request.system || !request.user) throw new HttpError(400, "expected { system, user, comment, page, schema?, image? }");
+      const d = { id: randomBytes2(9).toString("base64url"), request, session: "", created: Date.now(), state: "open", waiters: /* @__PURE__ */ new Set() };
+      if (!assignDraft(d)) throw new HttpError(409, "no agent session is connected to this bridge");
+      drafts.set(d.id, d);
+      return ok({ id: d.id, ...d.agent ? { agent: d.agent } : {} });
+    }
+    const draftOn = p.match(/^\/drafts\/([^/]+)(\/request|\/result)?$/);
+    if (draftOn) {
+      const id = decodeURIComponent(draftOn[1]);
+      const d = DRAFT_ID.test(id) ? drafts.get(id) : void 0;
+      if (!d) throw new HttpError(404, "no such draft request; it may have expired or the bridge restarted");
+      const view = () => ({ state: d.state, ...d.text !== void 0 ? { text: d.text } : {}, ...d.error ? { error: d.error } : {}, ...d.agent ? { agent: d.agent } : {} });
+      if (method === "GET" && !draftOn[2]) {
+        const wait = Math.min(DRAFT_WAIT_MAX_S, Math.max(0, Number(url2.searchParams.get("timeout") ?? 0) || 0));
+        if (wait > 0 && (d.state === "open" || d.state === "taken")) {
+          await new Promise((resolve) => {
+            const done = () => {
+              clearTimeout(timer);
+              d.waiters.delete(done);
+              resolve();
+            };
+            const timer = setTimeout(done, wait * 1e3);
+            d.waiters.add(done);
+            req.on("close", done);
+          });
+        }
+        return ok(view());
+      }
+      if (method === "DELETE" && !draftOn[2]) {
+        drafts.delete(id);
+        settleDraft(d, { state: "failed", error: "Cancelled." });
+        return ok({ ok: true });
+      }
+      if (method === "GET" && draftOn[2] === "/request") {
+        const session = url2.searchParams.get("session") ?? void 0;
+        if (session) touch(session);
+        if (d.state === "done" || d.state === "failed") throw new HttpError(410, d.state === "done" ? "this ticket was already drafted" : `this request ended: ${d.error ?? "cancelled"}`);
+        if (d.state === "open") {
+          d.state = "taken";
+          if (session) {
+            d.session = session;
+            d.agent = sessions.get(session)?.agent ?? d.agent;
+          }
+        }
+        return ok({ request: d.request });
+      }
+      if (method === "POST" && draftOn[2] === "/result") {
+        const body = await readJson(req);
+        if (typeof body?.session === "string") touch(body.session);
+        if (d.state === "done" || d.state === "failed") throw new HttpError(410, d.state === "done" ? "this ticket was already drafted" : `this request ended: ${d.error ?? "cancelled"}`);
+        const text2 = typeof body?.text === "string" ? body.text.trim().slice(0, 5e4) : "";
+        const error62 = typeof body?.error === "string" ? body.error.trim().slice(0, 2e3) : "";
+        if (!text2 && !error62) throw new HttpError(400, "expected { text } or { error }");
+        settleDraft(d, text2 ? { state: "done", text: text2 } : { state: "failed", error: error62 });
+        return ok({ ok: true });
+      }
+      throw new HttpError(405, "method not allowed");
+    }
     if (method === "POST" && p === "/messages") {
       const body = await readJson(req);
       const text2 = typeof body?.text === "string" ? body.text.trim().slice(0, 8e3) : "";
@@ -8567,7 +8902,9 @@ async function startDaemon(opts) {
       const afterParam = url2.searchParams.get("after");
       const after = afterParam !== null && /^\d+$/.test(afterParam) ? Number(afterParam) : void 0;
       const session = url2.searchParams.get("session")?.slice(0, 100) || void 0;
+      const wake = url2.searchParams.get("wake")?.slice(0, 100) || void 0;
       if (session) touch(session);
+      if (wake) touch(wake);
       const sent = session ? inFlight.get(session) : void 0;
       if (session && sent && after !== void 0 && after >= sent.cursor) {
         inFlight.delete(session);
@@ -8589,7 +8926,7 @@ async function startDaemon(opts) {
             if (s?.connected && Date.parse(s.lastSeen) <= at) disconnect(session);
           }, opts.sessionGoneMs ?? SESSION_GONE_MS).unref();
         }
-      }));
+      }), wake);
       if (closed || res.destroyed) {
         if (session && result.inbox?.length) hub.deliver(session, ...result.inbox);
         return;
@@ -8664,7 +9001,7 @@ async function startDaemon(opts) {
       if (req.method === "OPTIONS") {
         res.writeHead(204, {
           ...cors,
-          "access-control-allow-methods": "GET, POST, OPTIONS",
+          "access-control-allow-methods": "GET, POST, DELETE, OPTIONS",
           "access-control-allow-headers": "content-type, x-agentic-ui-token, last-event-id",
           "access-control-max-age": "600",
           // Chrome's Private Network Access preflight.
@@ -16236,16 +16573,16 @@ var $ZodUnion = /* @__PURE__ */ $constructor("$ZodUnion", (inst, def) => {
   };
 });
 function handleExclusiveUnionResults(results, final, inst, ctx) {
-  const matches = [];
+  const matches2 = [];
   for (let i = 0; i < results.length; i++) {
     if (results[i].issues.length === 0)
-      matches.push(i);
+      matches2.push(i);
   }
-  if (matches.length === 1) {
-    final.value = results[matches[0]].value;
+  if (matches2.length === 1) {
+    final.value = results[matches2[0]].value;
     return final;
   }
-  if (matches.length === 0) {
+  if (matches2.length === 0) {
     final.issues.push({
       code: "invalid_union",
       input: final.value,
@@ -16259,7 +16596,7 @@ function handleExclusiveUnionResults(results, final, inst, ctx) {
       inst,
       errors: [],
       inclusive: false,
-      matches
+      matches: matches2
     });
   }
   return final;
@@ -25839,45 +26176,45 @@ var PATTERN_IS_COMPLETE = /* @__PURE__ */ new Set([
   "xid"
 ]);
 function generateStringFormatCheck(doc, ctx, def, accessor, needsValue = true) {
-  const fmt = def.format;
-  if (fmt === "base64") {
+  const fmt2 = def.format;
+  if (fmt2 === "base64") {
     const validator = addConstant(ctx, isValidBase64);
     doc.write(`if (!${validator}(${accessor})) return INVALID;`);
     return accessor;
   }
-  if (fmt === "base64url") {
+  if (fmt2 === "base64url") {
     const validator = addConstant(ctx, isValidBase64URL);
     doc.write(`if (!${validator}(${accessor})) return INVALID;`);
     return accessor;
   }
-  if (fmt === "jwt") {
+  if (fmt2 === "jwt") {
     const validator = addConstant(ctx, isValidJWT2);
     const alg = addConstant(ctx, def.alg ?? null);
     doc.write(`if (!${validator}(${accessor}, ${alg})) return INVALID;`);
     return accessor;
   }
-  if (fmt === "ipv6") {
+  if (fmt2 === "ipv6") {
     const validator = addConstant(ctx, isValidIPv6);
     doc.write(`if (!${validator}(${accessor})) return INVALID;`);
     return accessor;
   }
-  if (fmt === "cidrv6") {
+  if (fmt2 === "cidrv6") {
     const validator = addConstant(ctx, isValidCIDRv6);
     doc.write(`if (!${validator}(${accessor})) return INVALID;`);
     return accessor;
   }
-  if (fmt === "credit_card") {
+  if (fmt2 === "credit_card") {
     const validator = addConstant(ctx, isValidCreditCard);
     doc.write(`if (!${validator}(${accessor})) return INVALID;`);
     return accessor;
   }
-  if (fmt === "iban") {
+  if (fmt2 === "iban") {
     const validator = addConstant(ctx, isValidIBAN);
     doc.write(`if (!${validator}(${accessor})) return INVALID;`);
     return accessor;
   }
   const formatDef = def;
-  if (fmt === "url" || fmt === "httpurl" || formatDef.normalize || formatDef.hostname !== void 0 || formatDef.protocol !== void 0) {
+  if (fmt2 === "url" || fmt2 === "httpurl" || formatDef.normalize || formatDef.hostname !== void 0 || formatDef.protocol !== void 0) {
     const parseConst = addConstant(ctx, validateURL);
     const defConst = addConstant(ctx, def);
     const trimVar = newVar(ctx);
@@ -25903,12 +26240,12 @@ function generateStringFormatCheck(doc, ctx, def, accessor, needsValue = true) {
   const customFn = def.fn;
   if (customFn) {
     if (isAsyncFunction(customFn))
-      throw new ZodCompileUnsupportedError(`async string format ${fmt}`);
+      throw new ZodCompileUnsupportedError(`async string format ${fmt2}`);
     const fnConst = addConstant(ctx, customFn);
     doc.write(`if (!${fnConst}(${accessor})) return INVALID;`);
     return accessor;
   }
-  if (PATTERN_IS_COMPLETE.has(fmt) && def.pattern) {
+  if (PATTERN_IS_COMPLETE.has(fmt2) && def.pattern) {
     const patternConst = addConstant(ctx, def.pattern);
     doc.write(`${patternConst}.lastIndex = 0;`);
     doc.write(`if (!${patternConst}.test(${accessor})) return INVALID;`);
@@ -32112,20 +32449,20 @@ function checkArrayGuards(arraySchema, guards) {
     if (guards.containsSchema) {
       const minContains = guards.minContains ?? 1;
       const ceiling = guards.maxContains !== void 0 ? guards.maxContains + 1 : Number.POSITIVE_INFINITY;
-      let matches = 0;
+      let matches2 = 0;
       for (const item of items) {
-        if (guards.containsSchema.safeParse(item).success && ++matches >= ceiling)
+        if (guards.containsSchema.safeParse(item).success && ++matches2 >= ceiling)
           break;
       }
-      if (matches < minContains) {
+      if (matches2 < minContains) {
         payload.issues.push({
           code: "custom",
-          message: `Array must contain at least ${minContains} matching ${plural(minContains)}; found ${matches}`,
+          message: `Array must contain at least ${minContains} matching ${plural(minContains)}; found ${matches2}`,
           input: items,
           continue: true
         });
       }
-      if (guards.maxContains !== void 0 && matches > guards.maxContains) {
+      if (guards.maxContains !== void 0 && matches2 > guards.maxContains) {
         payload.issues.push({
           code: "custom",
           message: `Array must contain at most ${guards.maxContains} matching ${plural(guards.maxContains)}`,
@@ -38235,9 +38572,19 @@ Answer with the reply tool so they see it there.`,
     meta: { kind: "message" }
   };
 }
+function draftEvent(e) {
+  return {
+    content: `A tester asked you to write a ticket for their UI note (request ${e.id}): "${e.comment}" on ${e.page}.
+
+This is writing only: do not change any code or files for it. Call get_ticket_request with this request_id for the note, its screenshot and the format, then call submit_ticket_draft with the ticket as JSON. They are waiting in the browser, so do it before other work.`,
+    // Tag attribute names must be identifiers (no hyphens), or Claude Code drops them.
+    meta: { kind: "ticket_request", request_id: e.id }
+  };
+}
 function eventText(e) {
   if (e.type === "answer") return answerEvent(e).content;
   if (e.type === "message") return messageEvent(e).content;
+  if (e.type === "draft") return draftEvent(e).content;
   return null;
 }
 
@@ -38246,7 +38593,6 @@ import { randomUUID } from "node:crypto";
 import { readFileSync as readFileSync4 } from "node:fs";
 import path6 from "node:path";
 var ASK_WAIT_SECONDS = 600;
-var CHECK_WAIT_SECONDS = 60;
 var MIME = { webp: "image/webp", png: "image/png", jpg: "image/jpeg" };
 var BridgeSession = class {
   constructor(client, id = randomUUID(), agent) {
@@ -38281,6 +38627,18 @@ var BridgeSession = class {
   async get(id) {
     return (await this.client.call("GET", `/annotations/${encodeURIComponent(id)}`)).annotation;
   }
+  /** A flow's replay file (flow.json with rrweb events) saved in the project, parsed; null when it has none. */
+  flowReplay(a) {
+    const file2 = flowNoteData(a)?.replay;
+    if (typeof file2 !== "string") return null;
+    const abs = path6.resolve(this.root, file2);
+    if (!abs.startsWith(path6.resolve(this.root) + path6.sep)) return null;
+    try {
+      return JSON.parse(readFileSync4(abs, "utf8"));
+    } catch {
+      return null;
+    }
+  }
   /** The screenshot the bridge saved for a note, or null. */
   screenshot(a) {
     const file2 = a.extensions?.bridge?.screenshot?.file;
@@ -38298,7 +38656,7 @@ var BridgeSession = class {
   /** Waits up to `seconds` for new notes. Each call carries on from the last, so nothing is missed in between. */
   async watch(seconds) {
     const after = this.watchCursor !== void 0 ? `&after=${this.watchCursor}` : "";
-    const { annotations, cursor: cursor2 } = await this.client.call("GET", `/watch?timeout=${seconds}${after}`, void 0, (seconds + 5) * 1e3);
+    const { annotations, cursor: cursor2 } = await this.client.call("GET", `/watch?timeout=${seconds}${after}&wake=${encodeURIComponent(this.id)}`, void 0, (seconds + 5) * 1e3);
     this.watchCursor = cursor2;
     return annotations;
   }
@@ -38327,27 +38685,13 @@ var BridgeSession = class {
     const r = await this.client.call("POST", `/asks/${encodeURIComponent(ask.id)}/detach`).catch(() => ({ answer: null }));
     return r.answer?.text !== void 0 ? { kind: "answered", text: r.answer.text } : { kind: "later" };
   }
-  /**
-   * Asks the developer's browser to run an accessibility rule again on a note's elements and
-   * waits up to `waitSeconds` for a tab showing the note's page to answer. Without `rule`, the
-   * note's own finding. Throws a 400 BridgeError when there's no rule to check.
-   */
-  async check(id, rule, signal, waitSeconds = CHECK_WAIT_SECONDS) {
-    const { check: check2 } = await this.client.call("POST", `/annotations/${encodeURIComponent(id)}/check`, { session: this.id, ...rule ? { rule } : {} });
-    const deadline = Date.now() + waitSeconds * 1e3;
-    try {
-      while (Date.now() < deadline && !signal?.aborted) {
-        const wait = Math.max(1, Math.min(50, Math.ceil((deadline - Date.now()) / 1e3)));
-        const r = await this.client.call("GET", `/checks/${encodeURIComponent(check2.id)}?timeout=${wait}`, void 0, (wait + 5) * 1e3, signal);
-        if (r.result) return { kind: "done", request: check2, result: r.result };
-        if (!r.open) break;
-      }
-    } catch (err) {
-      if (!signal?.aborted) console.error(`[agentic-ui] check_accessibility: ${err instanceof Error ? err.message : String(err)}`);
-    }
-    await this.client.call("POST", `/checks/${encodeURIComponent(check2.id)}/cancel`).catch(() => {
-    });
-    return { kind: "unanswered", request: check2 };
+  /** What a ticket draft request asks for (get_ticket_request). Throws a 410 BridgeError when it already ended. */
+  async ticketRequest(id) {
+    return (await this.client.call("GET", `/drafts/${encodeURIComponent(id)}/request?session=${encodeURIComponent(this.id)}`)).request;
+  }
+  /** Hands a drafted ticket (JSON text) back to the tester, or says why there is none. */
+  async submitTicket(id, answer) {
+    await this.client.call("POST", `/drafts/${encodeURIComponent(id)}/result`, { ...answer, session: this.id });
   }
   /** A message to the developer, shown in the side panel. */
   async reply(text2) {
@@ -38398,9 +38742,7 @@ function pollEvents(client, opts, onEvents) {
 // packages/bridge/src/mcp-tools.ts
 var BASE_INSTRUCTIONS = `Annotations are UI change requests the developer made by clicking elements in their running app. Each has a comment, the element (selector and text), and usually the React component, its call site and source file. Call list_pending, fix each one in code, then call resolve with a one-line summary of the change, or dismiss with a reason. If a file location is missing or stale, search the codebase for the element details. Use acknowledge to reply before a long fix.
 
-A recorded flow arrives as one annotation titled "Recorded flow" (ID flow-\u2026): the developer's description of what went wrong, the errors, warnings and failed requests logged on the page while recording, and the path of the video in the project. Its numbered steps are separate annotations that name the flow ("Flow step: N of recorded flow flow-\u2026"). Read the flow first, fix what it describes using the steps' elements and sources, then resolve the flow and its steps.
-
-A note with an "Accessibility:" line is a problem axe-core found (the rule, WCAG criterion and why each element fails). After fixing it, call check_accessibility with the note ID: the developer's browser runs that rule again on the note's elements and tells you which pass and which still fail. Resolve the note only when they pass.`;
+A recorded flow arrives as one annotation titled "Recorded flow" (ID flow-\u2026): the developer's description of what went wrong, the errors, warnings and failed requests logged on the page while recording, and the path of the video in the project. Its numbered steps are separate annotations that name the flow ("Flow step: N of recorded flow flow-\u2026"). Read the flow first, fix what it describes using the steps' elements and sources, then resolve the flow and its steps. When the flow has a "Replay:" line, it was recorded with the page's DOM too: call inspect_flow with its ID first for what was clicked and what changed after, and with a step for the page's HTML then.`;
 var text = (t) => ({ content: [{ type: "text", text: t }] });
 var failure2 = (err) => ({ ...text(`Bridge error: ${err instanceof Error ? err.message : String(err)}`), isError: true });
 function describe4(list, intro) {
@@ -38411,34 +38753,6 @@ function describe4(list, intro) {
   ].join("\n\n");
 }
 var INBOX_HEADING = "From the developer, in the browser:";
-function checkText(o) {
-  const { request: q } = o;
-  let page = q.page;
-  try {
-    page = new URL(q.page).pathname;
-  } catch {
-  }
-  if (o.kind === "unanswered") {
-    return `No browser tab answered. The check runs in the developer's Chrome, in a tab on ${q.page} with the Agentic UI toolbar on. Ask the developer (ask_developer) to open that page, then call check_accessibility again.`;
-  }
-  const r = o.result;
-  if (!r.ok) return `The check didn't run in the browser: ${r.message ?? "unknown error"}`;
-  const n = r.passed.length + r.failed.length + r.review.length + r.inapplicable.length + r.missing.length;
-  const lines = [`${r.engine ?? "axe-core"} ran "${q.rule}" again on ${n} element${n === 1 ? "" : "s"} of note ${q.note}, on ${r.page ?? page} as it is in the browser now.`];
-  if (r.failed.length) lines.push(`Still failing (${r.failed.length}):`, ...r.failed.map((x) => `- ${x.selector}: ${x.why}`));
-  if (r.passed.length) lines.push(`Pass now (${r.passed.length}):`, ...r.passed.map((s) => `- ${s}`));
-  if (r.review.length) lines.push(`The engine can't decide; the developer should check by hand (${r.review.length}):`, ...r.review.map((x) => `- ${x.selector}: ${x.why}`));
-  if (r.inapplicable.length) lines.push(`The rule no longer applies to (${r.inapplicable.length}), e.g. the element changed role:`, ...r.inapplicable.map((s) => `- ${s}`));
-  if (r.missing.length) {
-    lines.push(
-      `Not on the page now (${r.missing.length}):`,
-      ...r.missing.map((s) => `- ${s}`),
-      "They may have moved or been renamed, the change may not have reloaded yet, or they only show in a state (an open menu, an error) that isn't on screen."
-    );
-  }
-  lines.push(r.failed.length ? "Fix the failing elements and check again." : r.passed.length && !r.missing.length && !r.review.length ? "Fixed: resolve the note." : "Look at the above before resolving.");
-  return lines.join("\n");
-}
 var defaultLater = () => "No answer yet. The question stays on the note's pin in the browser. Work on other notes or end your turn meanwhile.";
 async function serveStdio(server) {
   await server.connect(new StdioServerTransport());
@@ -38501,6 +38815,28 @@ ${texts.join("\n\n---\n\n")}` }] };
       return failure2(err);
     }
   });
+  register("inspect_flow", {
+    title: "Inspect a recorded flow's replay",
+    description: `For a flow recorded with "Video + replay": reads the page's recorded DOM. Without step or at_ms, returns the timeline: page loads, what was clicked and typed (inputs masked), what changed on the page in the 2 seconds after each click (classes, text, elements added or removed), the developer's steps and the errors and failed requests. With step or at_ms, returns the page's HTML at that moment, around the step's element or a selector.`,
+    inputSchema: {
+      id: external_exports.string().describe("The flow's annotation ID (flow-\u2026), or the recording ID"),
+      step: external_exports.number().int().min(1).optional().describe("A step number: the page when the developer picked that step's element"),
+      at_ms: external_exports.number().int().min(0).optional().describe("Or a time, in ms from the start of the recording"),
+      selector: external_exports.string().max(300).optional().describe('Only these elements, e.g. ".filter-panel" or "ul.results > li" (tag, #id, .class, [attr="value"], spaces and >)'),
+      around: external_exports.number().int().min(0).max(10).optional().describe("Levels of parent elements to include around each match. Default 2")
+    },
+    annotations: { readOnlyHint: true }
+  }, async ({ id, step, at_ms, selector, around }) => {
+    try {
+      const annotation = await session.get(id.startsWith("flow-") ? id : flowNoteId(id));
+      if (!flowNoteData(annotation)) return text(`${id} is not a recorded flow.`);
+      const file2 = session.flowReplay(annotation);
+      if (!file2) return text("This flow has no replay: it was recorded as video only (or its replay file is gone). Use the video path in the flow instead.");
+      return text(inspectFlow(file2, { ...step !== void 0 ? { step } : {}, ...at_ms !== void 0 ? { at: at_ms } : {}, ...selector ? { selector } : {}, ...around !== void 0 ? { around } : {} }));
+    } catch (err) {
+      return failure2(err);
+    }
+  });
   register("watch", {
     title: "Wait for new annotations",
     description: `Waits up to timeout_seconds (max ${watchMax}) for the developer to send new annotations and returns them. Returns an empty result on timeout; call it again to keep waiting.`,
@@ -38510,7 +38846,7 @@ ${texts.join("\n\n---\n\n")}` }] };
     const seconds = timeout_seconds ?? watchMax;
     try {
       const annotations = await session.watch(seconds);
-      if (annotations.length === 0) return text(`No new annotations in ${seconds} seconds. Call watch again to keep waiting.`);
+      if (annotations.length === 0) return text(`No new annotations${opts.appendInbox ? " yet" : ` in ${seconds} seconds`}. Call watch again to keep waiting.`);
       return text(describe4(annotations, `${annotations.length} new annotation${annotations.length === 1 ? "" : "s"}:`));
     } catch (err) {
       return failure2(err);
@@ -38555,24 +38891,6 @@ ${texts.join("\n\n---\n\n")}` }] };
       return failure2(err);
     }
   });
-  const checkWait = Math.min(CHECK_WAIT_SECONDS, opts.maxWaitSeconds ?? CHECK_WAIT_SECONDS);
-  register("check_accessibility", {
-    title: "Re-run an accessibility check",
-    description: `Runs an axe-core rule again on a note's elements in the developer's browser (the tab showing the note's page, with the toolbar on) and returns which elements pass and which still fail. Use it after fixing a note that has an accessibility finding, before resolving it. Waits up to ${checkWait} seconds for the browser. The page must already show your change (hot reload).`,
-    inputSchema: {
-      id: external_exports.string().describe("Annotation ID"),
-      rule: external_exports.string().regex(/^[a-z0-9-]+$/).optional().describe(`axe-core rule ID, e.g. "color-contrast". Default: the note's own finding.`)
-    },
-    annotations: { readOnlyHint: true }
-  }, async ({ id, rule }, extra) => {
-    try {
-      return text(checkText(await session.check(id, rule, extra.signal, checkWait)));
-    } catch (err) {
-      if (err instanceof BridgeError && err.status === 404 && err.message === "not found") return text("This project's bridge is too old for accessibility checks. Restart the coding agent so it starts a newer one.");
-      if (err instanceof BridgeError && (err.status === 400 || err.status === 404)) return text(`Not checked: ${err.message.replace(/\.+$/, "")}.`);
-      return failure2(err);
-    }
-  });
   register("reply", {
     title: "Message the developer",
     description: "Sends a message to the developer's browser, in the extension's side panel. Use it to answer a message the developer wrote there, or to tell them something they should see while they test in the browser.",
@@ -38595,6 +38913,58 @@ ${texts.join("\n\n---\n\n")}` }] };
     description: "Closes an annotation without a change, with the reason. The developer sees it on the pin.",
     inputSchema: { id: external_exports.string(), reason: external_exports.string().min(1).max(4e3) }
   }, async ({ id, reason }) => setStatus(id, "dismissed", reason, "dismissed"));
+  register("get_ticket_request", {
+    title: "Read a ticket draft request",
+    description: "Returns what a tester asked you to write up as a ticket (a ticket_request event names the request_id): how to write it, the note with its page details, its screenshot, and the JSON format to answer in. Writing only: change no code or files. Then call submit_ticket_draft.",
+    inputSchema: { request_id: external_exports.string().min(1).max(64) },
+    annotations: { readOnlyHint: true }
+  }, async ({ request_id }) => {
+    try {
+      const r = await session.ticketRequest(request_id);
+      const shot = r.image ? /^data:(image\/(?:png|jpeg|webp));base64,(.*)$/.exec(r.image) : null;
+      const parts = [
+        `Ticket request ${request_id}. Write the ticket the way these instructions say; change no code or files.`,
+        r.system,
+        r.user,
+        r.schema ? `Answer by calling submit_ticket_draft with request_id "${request_id}" and ticket set to one JSON object matching this JSON Schema (every property present; use "" or [] when there is nothing to say):
+${JSON.stringify(r.schema)}` : `Answer by calling submit_ticket_draft with request_id "${request_id}" and the ticket as JSON.`
+      ];
+      return { content: [{ type: "text", text: parts.join("\n\n") }, ...shot ? [{ type: "image", mimeType: shot[1], data: shot[2] }] : []] };
+    } catch (err) {
+      if (err instanceof BridgeError && (err.status === 404 || err.status === 410)) return text(`Nothing to do: ${err.message}.`);
+      return failure2(err);
+    }
+  });
+  register("submit_ticket_draft", {
+    title: "Hand a drafted ticket back",
+    description: "Sends the ticket you drafted for a get_ticket_request back to the tester's browser, where they check it before it is filed. ticket is the JSON object in the requested format. If you can't draft it, pass error with the reason instead.",
+    inputSchema: {
+      request_id: external_exports.string().min(1).max(64),
+      ticket: external_exports.union([external_exports.string(), external_exports.record(external_exports.string(), external_exports.unknown())]).optional().describe("The ticket as a JSON object (or its JSON text)."),
+      error: external_exports.string().max(2e3).optional().describe("Why there is no draft, instead of ticket.")
+    }
+  }, async ({ request_id, ticket, error: error62 }) => {
+    try {
+      const json2 = typeof ticket === "string" ? ticket.trim() : ticket ? JSON.stringify(ticket) : "";
+      if (json2) {
+        try {
+          JSON.parse(json2);
+        } catch {
+          return { ...text("ticket isn't valid JSON. Send it again as one JSON object in the requested format."), isError: true };
+        }
+        await session.submitTicket(request_id, { text: json2 });
+        return text("Sent. The tester sees the draft in the browser and decides whether to use it. Nothing else to do for this request.");
+      }
+      if (error62) {
+        await session.submitTicket(request_id, { error: error62 });
+        return text("Told the tester there is no draft.");
+      }
+      return { ...text("Pass ticket (the JSON object) or error."), isError: true };
+    } catch (err) {
+      if (err instanceof BridgeError && (err.status === 404 || err.status === 410)) return text(`Not sent: ${err.message}. Nothing else to do for this request.`);
+      return failure2(err);
+    }
+  });
 }
 
 // packages/bridge/src/drivers/claude-code.ts
@@ -38615,7 +38985,9 @@ If a note is unclear or you need the developer to choose between approaches, cal
 
 The developer can also write to you from the browser's side panel; those messages arrive as <channel source="agentic-ui" kind="message">. Answer them with the reply tool, since the developer is reading the browser, not the terminal. Treat them as requests from the developer.
 
-A note can get follow-up comments after you resolve it; they arrive as <channel source="agentic-ui" kind="followup" annotation_id="...">, and the note is pending again. Its "Follow-ups" list (in list_pending and get_annotation) is the conversation so far; act on the latest follow-up.`;
+A note can get follow-up comments after you resolve it; they arrive as <channel source="agentic-ui" kind="followup" annotation_id="...">, and the note is pending again. Its "Follow-ups" list (in list_pending and get_annotation) is the conversation so far; act on the latest follow-up.
+
+A tester can also ask you to write a ticket for a note (Improve): it arrives as <channel source="agentic-ui" kind="ticket_request" request_id="...">. Call get_ticket_request, write the ticket as it says, and call submit_ticket_draft. That is writing only: change no code or files for it.`;
 function channelEvent(list) {
   const pages = [...new Set(list.map((a) => a.page.url))];
   return {
@@ -38663,6 +39035,8 @@ async function push(server, { annotations, inbox }) {
       await server.server.notification({ method: "notifications/claude/channel/permission", params: { request_id: e.request_id, behavior: e.behavior } });
     } else if (e.type === "message") {
       await server.server.notification({ method: "notifications/claude/channel", params: messageEvent(e) });
+    } else if (e.type === "draft") {
+      await server.server.notification({ method: "notifications/claude/channel", params: draftEvent(e) });
     } else {
       await server.server.notification({ method: "notifications/claude/channel", params: answerEvent(e) });
     }
@@ -38689,7 +39063,9 @@ New annotations do not arrive on their own. When the developer asks you to fix t
 
 If a note is unclear or you need the developer to choose between approaches, call ask_developer with the note ID rather than asking in the chat: the question appears on the note's pin in the browser, where the developer is looking. If it returns without an answer, carry on with other notes; the answer comes later.
 
-What the developer writes from the browser (messages, follow-ups on notes, late answers) is added at the end of your tool results, under "${INBOX_HEADING}". Act on it, and answer messages with the reply tool, since the developer is reading the browser. A follow-up makes its note pending again; its "Follow-ups" list (in list_pending and get_annotation) is the conversation so far, so act on the latest one.`;
+What the developer writes from the browser (messages, follow-ups on notes, late answers) is added at the end of your tool results, under "${INBOX_HEADING}". Act on it, and answer messages with the reply tool, since the developer is reading the browser. A follow-up makes its note pending again; its "Follow-ups" list (in list_pending and get_annotation) is the conversation so far, so act on the latest one.
+
+A tester can also ask you to write a ticket for a note (Improve); the request appears there too, with a request_id. Call get_ticket_request, write the ticket as it says, and call submit_ticket_draft. That is writing only: change no code or files for it.`;
 function prettyClient(name) {
   return name.replace(/[-_]+/g, " ").replace(/\b(mcp|client)\b/gi, "").trim().replace(/\b\w/g, (c) => c.toUpperCase()) || name;
 }

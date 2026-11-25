@@ -15,12 +15,11 @@ The developer clicks elements in their running app, writes a comment, and sends 
    - If there is no file location, or it looks stale, search the codebase for the element details (test id, aria-label, visible text, class names).
    - For a large or unclear change, call `acknowledge` first with a short plan or question.
    - Make the change.
-   - If the note has an "Accessibility:" line (a problem axe-core found), call `check_accessibility` with its ID once your change is on the page: the developer's browser runs the rule again on the note's elements and says which pass and which still fail. Resolve it only when they pass.
    - Call `resolve` with a one-line summary the developer will see on the pin, for example "FilterPanel: Apply button is full width below 640px".
    - If no change is needed, or you can't do it, call `dismiss` with the reason.
 3. Finish with a short list of what you changed.
 
-A **recorded flow** is one annotation titled "Recorded flow" (ID `flow-…`): the developer's description of a bug that takes several steps, the errors, warnings and failed requests logged on the page while recording, and the path of the screen recording in the project (`.agentic-ui/flows/`). Its numbered steps are separate annotations that say "Flow step: N of recorded flow flow-…". Read the flow first and look for the cause in its problems; use the steps' elements and sources to find the code. If you need to see a moment of the video, extract a frame with `ffmpeg` and read the image. Resolve the flow and its steps together.
+A **recorded flow** is one annotation titled "Recorded flow" (ID `flow-…`): the developer's description of a bug that takes several steps, the errors, warnings and failed requests logged on the page while recording, and the path of the screen recording in the project (`.agentic-ui/flows/`). Its numbered steps are separate annotations that say "Flow step: N of recorded flow flow-…". Read the flow first and look for the cause in its problems; use the steps' elements and sources to find the code. If the flow has a "Replay:" line, it was recorded with the page's DOM too: call the `inspect_flow` tool with the flow's ID first for what was clicked and what changed on the page after each click, and with a step number for the page's HTML at that step. If you need to see a moment of the video, extract a frame with `ffmpeg` and read the image. Resolve the flow and its steps together.
 
 ## Fixing them as they come in
 
